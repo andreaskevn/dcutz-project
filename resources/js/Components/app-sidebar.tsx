@@ -20,7 +20,7 @@ const items = [
   },
   {
     title: "Manajemen Reservasi",
-    url: "#",
+    url: "/reservasi",
     icon: BookOpenCheck,
   },
   {
