@@ -17,6 +17,12 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/Components/ui/alert-dialog";
+import { useEffect } from "react";
+import { usePage } from "@inertiajs/react";
+import { toast } from "sonner";
+import { Dialog, DialogTrigger } from "@/Components/ui/dialog";
+import ImportUserModal from "./import-csv";
+import { Upload } from "lucide-react";
 
 export type Karyawan = {
   name: string
@@ -28,24 +34,48 @@ export type Karyawan = {
 
 interface Props {
   users: Karyawan[];
+  roles: { id: string; role_name: string }[];
+  shifts: { id: string; shift_name: string }[];
+  auth: {
+    role: string | null;
+  };
 }
 
-export default function IndexPage({ users }: Props) {
+export default function IndexPage({ users, roles, shifts, auth }: Props) {
+  const { props } = usePage();
+  const flash = props.flash as { success?: string; error?: string };
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const userRole = auth?.role;
+  console.log("User Role:", userRole);
+
+  useEffect(() => {
+    if (flash?.success) {
+      toast.success(flash.success);
+    }
+    if (flash?.error) {
+      toast.error(flash.error);
+    }
+  }, [flash]);
   const [alertMessage, setAlertMessage] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
 
   const handleDelete = (id: string) => {
     router.delete(route("users.destroy", id), {
       preserveScroll: true,
+      onStart: () => {
+        toast.loading("Deleting user...");
+      },
       onSuccess: () => {
-        setAlertMessage({ type: "success", message: "User berhasil dihapus." });
-        setTimeout(() => setAlertMessage(null), 3000);
+        toast.dismiss();
+        toast.success("User deleted successfully!");
       },
       onError: () => {
-        setAlertMessage({ type: "error", message: "Terjadi kesalahan saat menghapus presensi." });
-        setTimeout(() => setAlertMessage(null), 3000);
+        toast.dismiss();
+        toast.error("An error occurred while deleting the user.");
       },
     });
   };
+
 
   const columns: ColumnDef<Karyawan>[] = [
     { accessorKey: "name", header: "Name" },
@@ -91,7 +121,7 @@ export default function IndexPage({ users }: Props) {
 
   return (
     <Layout>
-      <Head title="Manajemen Karyawan" />
+      <Head title="Manajemen User" />
       <div className="px-8 py-10 w-full">
         {alertMessage && (
           <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
@@ -103,19 +133,36 @@ export default function IndexPage({ users }: Props) {
         )}
 
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-semibold">Daftar Karyawan</h1>
-          <Button
-            className="px-4 py-2 rounded-md"
-            onClick={() => (window.location.href = route("users.create"))}
-          >
-            Tambah Karyawan
-          </Button>
+          <h1 className="text-2xl font-semibold">Daftar User</h1>
+          {userRole === "Owner" && (
+            <div className="flex items-center gap-3">
+              <Dialog open={isImportModalOpen} onOpenChange={setIsImportModalOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <Upload className="h-4 w-4 mr-2" />
+                    Import CSV
+                  </Button>
+                </DialogTrigger>
+                <ImportUserModal
+                  open={isImportModalOpen}
+                  onOpenChange={setIsImportModalOpen}
+                />
+              </Dialog>
+
+              <Button
+                className="px-4 py-2 rounded-md"
+                onClick={() => (window.location.href = route("users.create"))}
+              >
+                Tambah Karyawan
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="w-full">
-          <DataTable columns={columns} data={users} />
+          <DataTable columns={columns} data={users} roles={roles} shifts={shifts} />
         </div>
       </div>
-    </Layout>
+    </Layout >
   );
 }

@@ -21,35 +21,41 @@ import { convertDate } from "@/lib/convertDate";
 import { Dialog, DialogTrigger } from "@/Components/ui/dialog";
 import ImportPresensiModal from "./import-csv";
 import { Plus, Upload } from "lucide-react";
+import { useEffect } from "react";
+import { usePage } from "@inertiajs/react";
+import { toast } from "sonner";
 
 export type Presensi = {
   id: string;
   waktu_presensi: string;
-  created_by: string;
+  id_user: string;
   created_at: string;
 };
 
 interface Props {
   presensis: Presensi[];
+  users: { id: string; name: string }[];
+  filters: {
+    start_date?: string;
+    end_date?: string;
+    created_by?: string;
+  };
 }
 
-export default function IndexPage({ presensis }: Props) {
-  const [alertMessage, setAlertMessage] = useState<{ type: "success" | "error"; message: string } | null>(null);
+export default function IndexPage({ presensis, users, filters }: Props) {
+  const { props } = usePage();
+  const flash = props.flash as { success?: string; error?: string };
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
-  const handleDelete = (id: string) => {
-    router.delete(route("presensi.destroy", id), {
-      preserveScroll: true,
-      onSuccess: () => {
-        setAlertMessage({ type: "success", message: "Presensi berhasil dihapus." });
-        setTimeout(() => setAlertMessage(null), 3000);
-      },
-      onError: () => {
-        setAlertMessage({ type: "error", message: "Terjadi kesalahan saat menghapus presensi." });
-        setTimeout(() => setAlertMessage(null), 3000);
-      },
-    });
-  };
+  useEffect(() => {
+    if (flash?.success) {
+      toast.success(flash.success);
+    }
+    if (flash?.error) {
+      toast.error(flash.error);
+    }
+  }, [flash]);
+  const [alertMessage, setAlertMessage] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   const columns: ColumnDef<Presensi>[] = [
     { accessorKey: "waktu_presensi", header: "Waktu Presensi" },
@@ -73,25 +79,14 @@ export default function IndexPage({ presensis }: Props) {
             >
               Edit
             </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive">Hapus</Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Hapus Presensi</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Apakah kamu yakin ingin menghapus presensi ini? Tindakan ini tidak bisa dibatalkan.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Batal</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => handleDelete(presensiItem.id)}>
-                    Hapus
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <Button
+              variant="secondary"
+              onClick={() =>
+                router.visit(route("presensi.show", { id: presensiItem.id }))
+              }
+            >
+              Detail
+            </Button>
           </div>
         );
       },
@@ -115,20 +110,20 @@ export default function IndexPage({ presensis }: Props) {
           <h1 className="text-2xl font-semibold">Daftar Presensi</h1>
 
           <div className="flex items-center gap-3">
-            <Dialog open={isImportModalOpen} onOpenChange={setIsImportModalOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Import CSV
-                </Button>
-              </DialogTrigger>
 
-              <ImportPresensiModal
-                open={isImportModalOpen}
-                onOpenChange={setIsImportModalOpen}
-              />
-            </Dialog>
-
+            <Button
+              variant="outline"
+              onClick={() => {
+                const params = new URLSearchParams({
+                  start_date: filters.start_date ?? "",
+                  end_date: filters.end_date ?? "",
+                  created_by: filters.created_by ?? "",
+                }).toString();
+                window.open(route("presensi.export") + "?" + params, "_blank");
+              }}
+            >
+              Export Excel
+            </Button>
             <Link href={route("presensi.create")}>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
@@ -136,11 +131,13 @@ export default function IndexPage({ presensis }: Props) {
               </Button>
             </Link>
 
+
           </div>
         </div>
 
         <div className="w-full">
-          <DataTable columns={columns} data={presensis} />
+          <DataTable columns={columns} data={presensis} users={users} filters={filters} />
+
         </div>
       </div>
     </Layout>

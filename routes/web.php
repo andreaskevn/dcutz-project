@@ -32,6 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+    Route::post('/users/import', [UserController::class, 'import'])->name('users.import.store');
 
 
     Route::get('/presensi', [PresensiController::class, 'index'])->name('presensi.index');
@@ -41,6 +42,9 @@ Route::middleware('auth')->group(function () {
     Route::put('/presensi/{id}', [PresensiController::class, 'update'])->name('presensi.update');
     Route::delete('/presensi/{id}', [PresensiController::class, 'destroy'])->name('presensi.destroy');
     Route::post('/presensi/import', [PresensiController::class, 'importStore'])->name('presensi.import.store');
+    Route::get('/presensi/{id}/detail', [PresensiController::class, 'show'])->name('presensi.show');
+    Route::get('/presensi/export', [PresensiController::class, 'export'])->name('presensi.export');
+
 
 
     Route::get('/reservasi', [ReservasiController::class, 'index'])->name('reservasi.index');

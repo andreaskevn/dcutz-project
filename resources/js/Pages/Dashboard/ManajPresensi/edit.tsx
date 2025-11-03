@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/Components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { DataTable } from "../ManajKaryawan/data-tables";
 import { ColumnDef } from "@tanstack/react-table";
+import { Toaster, toast } from "sonner";
 
 type KaryawanDetail = {
     id: string;
@@ -54,7 +55,7 @@ export default function EditPresensi({ presensi, detailPresensis, shifts }: Prop
 
     const filteredKaryawan = useMemo(() => {
         return detailPresensis.filter(
-            k => k.role === "Capster" && k.id_shift === selectedShift
+            k => k.id_shift === selectedShift
         );
     }, [selectedShift, detailPresensis]);
 
@@ -74,16 +75,29 @@ export default function EditPresensi({ presensi, detailPresensis, shifts }: Prop
             status: statusKehadiran[k.id],
         }));
 
-        console.log("Updating payload: ", payload);
+        const toastId = toast.loading("Memperbarui presensi...");
+        setProcessing(true);
 
         router.put(
             route("presensi.update", presensi.id),
+            { presensis: payload },
             {
-                presensis: payload
-            },
-            {
-                onStart: () => setProcessing(true),
-                onFinish: () => setProcessing(false),
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success("Presensi berhasil diperbarui", {
+                        id: toastId,
+                        description: "Data kehadiran telah berhasil diperbarui.",
+                    });
+                },
+                onError: () => {
+                    toast.error("Gagal memperbarui presensi", {
+                        id: toastId,
+                        description: "Terjadi kesalahan, silakan coba lagi.",
+                    });
+                },
+                onFinish: () => {
+                    setProcessing(false);
+                },
             }
         );
     };

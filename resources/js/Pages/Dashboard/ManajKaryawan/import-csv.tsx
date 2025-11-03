@@ -21,14 +21,14 @@ interface ImportReservasiModalProps {
     onOpenChange: (open: boolean) => void;
 }
 
-export default function ImportReservasiModal({ open, onOpenChange }: ImportReservasiModalProps) {
+export default function ImportUserModal({ open, onOpenChange }: ImportReservasiModalProps) {
     const { data, setData, post, processing, errors, reset } = useForm<{ file: File | null }>({
         file: null,
     });
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        post(route("reservasi.import.store"), {
+        post(route("users.import.store"), {
             preserveScroll: true,
             onSuccess: () => {
                 onOpenChange(false);
@@ -43,9 +43,9 @@ export default function ImportReservasiModal({ open, onOpenChange }: ImportReser
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
-                    <DialogTitle className="text-xl font-semibold">Import Reservasi dari CSV</DialogTitle>
+                    <DialogTitle className="text-xl font-semibold">Import User dari CSV</DialogTitle>
                     <DialogDescription>
-                        Unggah file CSV untuk membuat data reservasi secara massal.
+                        Unggah file CSV untuk membuat data user secara massal.
                     </DialogDescription>
                 </DialogHeader>
 

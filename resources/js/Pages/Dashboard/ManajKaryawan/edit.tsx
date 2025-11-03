@@ -5,6 +5,7 @@ import { Label } from "@/Components/ui/label";
 import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
+import { Toaster, toast } from "sonner";
 
 interface Role {
     id: string;
@@ -30,6 +31,7 @@ interface Props {
     shifts: Shift[];
 }
 
+
 export default function EditKaryawan({ user, roles, shifts }: Props) {
     const { data, setData, put, processing, errors } = useForm({
         name: user.name || "",
@@ -38,18 +40,44 @@ export default function EditKaryawan({ user, roles, shifts }: Props) {
         id_shift: user.id_shift || "",
     });
 
+    const resetForm = () => {
+        setData({
+            name: "",
+            email: "",
+            id_role: "",
+            id_shift: "",
+        });
+    };
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        put(route("users.update", user.id));
+
+        if (!data.name || !data.id_role || !data.id_shift) {
+            toast.warning("User's name, role, and shift are required.");
+            return;
+        }
+        const toastId = toast.loading("Updating user...");
+
+        put(route("users.update", user.id), {
+            onSuccess: () => {
+                toast.dismiss(toastId);
+                toast.success("Successfully updating users");
+                resetForm();
+            },
+            onError: (errors) => {
+                toast.dismiss(toastId);
+                toast.error("Failed updating users..");
+                console.error(errors);
+            },
+        });
     };
 
     return (
         <Layout>
-            <Head title="Edit Karyawan" />
+            <Head title="Edit User" />
             <div className="py-10 px-6">
                 <Card className="shadow-md border border-solid">
                     <CardHeader>
-                        <CardTitle className="text-xl font-semibold">Edit Karyawan</CardTitle>
+                        <CardTitle className="text-xl font-semibold">Edit User</CardTitle>
                     </CardHeader>
 
                     <CardContent>

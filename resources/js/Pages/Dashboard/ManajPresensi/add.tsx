@@ -8,8 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Label } from "@/Components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/Components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
-import { DataTable } from "./data-tables";
+import { DataTable } from "./data-tables-users";
 import { ColumnDef } from "@tanstack/react-table";
+import { Toaster, toast } from "sonner";
+
 
 type Karyawan = {
     id: string;
@@ -32,7 +34,7 @@ export default function CreatePresensi({ presensis, shifts }: Props) {
 
     const filteredKaryawan = useMemo(() => {
         const filtered = presensis.filter(
-            k => k.role === "Capster" && k.shift === selectedShift
+            k => k.shift === selectedShift
         );
 
         const initialStatus: Record<string, string> = {};
@@ -56,17 +58,31 @@ export default function CreatePresensi({ presensis, shifts }: Props) {
             status: statusKehadiran[k.id],
         }));
 
-        console.log("payload ", payload);
+        const toastId = toast.loading("Menyimpan presensi...");
+        setProcessing(true);
 
         router.post(
             route("presensi.store"),
+            { presensis: payload },
             {
-                presensis: payload
-            },
-            // {
-            //     onStart: () => setProcessing(true),
-            //     onFinish: () => setProcessing(false),
-            // }
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success("Presensi berhasil disimpan", {
+                        id: toastId,
+                        description: "Data kehadiran telah berhasil ditambahkan.",
+                    });
+                    // resetForm();
+                },
+                onError: () => {
+                    toast.error("Gagal menyimpan presensi", {
+                        id: toastId,
+                        description: "Terjadi kesalahan, silakan coba lagi.",
+                    });
+                },
+                onFinish: () => {
+                    setProcessing(false);
+                },
+            }
         );
     };
 

@@ -24,19 +24,34 @@ import {
 
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
+import { router } from "@inertiajs/react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
+import { DatePicker } from "@/Components/ui/date-picker";
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
     id?: string;
+    users?: { id: string; name: string }[];
+    filters?: {
+        start_date?: string;
+        end_date?: string;
+        id_user?: string;
+    };
 }
+
 
 export function DataTable<TData, TValue>({
     columns,
     data,
+    users = [],
+    filters = {},
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+    const [startDate, setStartDate] = React.useState(filters.start_date || "");
+    const [endDate, setEndDate] = React.useState(filters.end_date || "");
+    const [createdBy, setCreatedBy] = React.useState(filters.id_user || "");
     const table = useReactTable({
         data,
         columns,
@@ -51,21 +66,66 @@ export function DataTable<TData, TValue>({
         },
     });
 
+    const handleFilter = () => {
+        router.get(route("presensi.index"), {
+            start_date: startDate,
+            end_date: endDate,
+            id_user: createdBy,
+        }, { preserveScroll: true });
+    };
+
+    const resetFilter = () => {
+        setStartDate("");
+        setEndDate("");
+        setCreatedBy("");
+        router.get(route("presensi.index"), {}, { preserveScroll: true });
+    };
+
     // console.log("data ", data);
 
     return (
         <div>
-            {/* <div className="flex items-center py-4">
-                <Input
-                    placeholder="Filter emails..."
-                    value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
-                    onChange={(event) =>
-                        table.getColumn("email")?.setFilterValue(event.target.value)
-                    }
-                    className="max-w-sm"
-                />
-            </div> */}
+            <div className="flex flex-wrap items-end gap-3 py-2">
+                <div>
+                    <label className="text-sm font-medium mb-1 block">Start Date</label>
+                    <DatePicker
+                        value={startDate ? new Date(startDate) : null}
+                        onChange={(date) => setStartDate(date ? date.toISOString().split("T")[0] : "")}
+                    />
+                </div>
 
+                <div>
+                    <label className="text-sm font-medium mb-1 block">End Date</label>
+                    <DatePicker
+                        value={endDate ? new Date(endDate) : null}
+                        onChange={(date) => setEndDate(date ? date.toISOString().split("T")[0] : "")}
+                    />
+                </div>
+
+
+                <div>
+                    <label className="text-sm font-medium">Created By</label>
+                    <Select onValueChange={(value) => setCreatedBy(value)}>
+                        <SelectTrigger className="w-[200px]">
+                            <SelectValue placeholder="Pilih User" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Semua</SelectItem>
+                            {users.map((user) => (
+                                <SelectItem key={user.id} value={user.id}>
+                                    {user.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
+                </div>
+
+                <Button onClick={handleFilter}>Filter</Button>
+                <Button onClick={resetFilter} variant="outline">
+                    Reset
+                </Button>
+            </div>
             <div className="w-full overflow-x-auto rounded-md border border-solid">
                 <Table>
                     <TableHeader>

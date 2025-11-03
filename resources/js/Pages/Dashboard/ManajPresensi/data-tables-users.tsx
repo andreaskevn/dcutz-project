@@ -23,22 +23,17 @@ import {
 } from "@/Components/ui/table";
 
 import { Button } from "@/Components/ui/button";
-import { Input } from "@/Components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
     id?: string;
-    roles?: { id: string; role_name: string }[];
-    shifts?: { id: string; shift_name: string }[];
 }
+
 
 export function DataTable<TData, TValue>({
     columns,
     data,
-    roles = [],
-    shifts = [],
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -56,62 +51,11 @@ export function DataTable<TData, TValue>({
         },
     });
 
-    console.log("data ", data);
-    console.log("roles ", roles);
-    console.log("shifts ", shifts);
+
+    // console.log("data ", data);
 
     return (
         <div>
-            <div className="flex flex-wrap items-center gap-4 py-4">
-                <Input
-                    placeholder="Filter names..."
-                    value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-                    onChange={(event) =>
-                        table.getColumn("name")?.setFilterValue(event.target.value)
-                    }
-                    className="max-w-sm"
-                />
-                {roles.length > 0 && (
-                    <Select
-                        onValueChange={(value) =>
-                            table.getColumn("role")?.setFilterValue(value === "all" ? "" : value)
-                        }
-                    >
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Filter Role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Role</SelectItem>
-                            {roles.map((role) => (
-                                <SelectItem key={role.id} value={role.role_name}>
-                                    {role.role_name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                )}
-
-                {shifts.length > 0 && (
-                    <Select
-                        onValueChange={(value) =>
-                            table.getColumn("shift")?.setFilterValue(value === "all" ? "" : value)
-                        }
-                    >
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Filter Shift" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Shift</SelectItem>
-                            {shifts.map((shift) => (
-                                <SelectItem key={shift.id} value={shift.shift_name}>
-                                    {shift.shift_name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                )}
-            </div>
-
             <div className="w-full overflow-x-auto rounded-md border border-solid">
                 <Table>
                     <TableHeader>

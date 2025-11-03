@@ -14,7 +14,7 @@ class Presensi extends Model
 
     protected $fillable = [
         'id',
-        'created_by',
+        'id_user',
         'waktu_presensi',
     ];
 
@@ -30,7 +30,7 @@ class Presensi extends Model
 
     public function user()
     {   
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(User::class, 'id_user');
     }
 
     public function shift()

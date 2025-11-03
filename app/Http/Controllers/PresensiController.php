@@ -14,26 +14,52 @@ use Illuminate\Validation\Rule;
 use App\Models\DetailPresensi;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use App\Exports\PresensiExport;
+use Maatwebsite\Excel\Facades\Excel;
+// use Maatwebsite\Excel\Facades\Excel;
 
 class PresensiController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $presensis = Presensi::with(['user', 'detailPresensis.shift'])->get()->map(function ($p) {
+        $query = Presensi::with(['user', 'detailPresensis.shift']);
+
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $query->whereBetween('created_at', [
+                $request->start_date . ' 00:00:00',
+                $request->end_date . ' 23:59:59',
+            ]);
+        }
+
+        if ($request->filled('id_user')) {
+            $query->where('id_user', $request->id_user);
+        }
+
+        $presensis = $query->get()->map(function ($p) {
             return [
                 'id' => $p->id,
                 'waktu_presensi' => $p->waktu_presensi,
-                'created_by' => $p->created_by,
-                'created_at' => $p->created_at,
+                'created_by' => $p->user->name ? $p->user->name : '-',
+                'created_at' => $p->created_at->format('Y-m-d H:i:s'),
             ];
         });
+
+        $users = User::select('id', 'name')->get();
+
         return Inertia::render('Dashboard/ManajPresensi/page', [
             'presensis' => $presensis->toArray(),
+            'users' => $users->toArray(),
+            'filters' => [
+                'start_date' => $request->start_date,
+                'end_date' => $request->end_date,
+                'id_user' => $request->id_user,
+            ],
         ]);
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -50,15 +76,12 @@ class PresensiController extends Controller
         });
 
         $presensis = User::with('shift')
-            ->whereHas('role', function ($query) {
-                $query->where('role_name', 'Capster');
-            })
             ->get()
             ->map(function ($user) {
                 return [
                     'id' => (string) $user->id,
                     'name' => $user->name,
-                    'role' => 'Capster',
+                    'role' => $user->role ? $user->role->role_name : '-',
                     'shift' => $user->id_shift,
                 ];
             });
@@ -93,7 +116,7 @@ class PresensiController extends Controller
         $presensi = Presensi::create([
             'id' => Str::uuid(),
             'waktu_presensi' => now(),
-            'created_by' => Auth::user()->name,
+            'id_user' => Auth::id(),
         ]);
 
         $dataToInsert = [];
@@ -116,9 +139,31 @@ class PresensiController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Presensi $presensi)
+    public function show($id)
     {
-        //
+        $presensi = Presensi::with('detailPresensis.user')->findOrFail($id);
+
+        $detailPresensis = $presensi->detailPresensis->map(function ($detail) {
+            return [
+                'id'        => $detail->user->id,
+                'name'      => $detail->user->name,
+                'role'      => $detail->user->role->role_name ?? '-',
+                'id_shift'  => $detail->user->id_shift,
+                'status'    => $detail->status_presensi,
+            ];
+        });
+
+        $shifts = Shift::select('id', 'shift_name', 'start_time', 'end_time')->get();
+
+        return Inertia::render('Dashboard/ManajPresensi/detail-presensi', [
+            'presensi' => [
+                'id'             => $presensi->id,
+                'waktu_presensi' => $presensi->waktu_presensi,
+                'created_by'     => $presensi->created_by,
+            ],
+            'detailPresensis' => $detailPresensis,
+            'shifts'          => $shifts,
+        ]);
     }
 
     /**
@@ -138,15 +183,12 @@ class PresensiController extends Controller
         $presensi = Presensi::findOrFail($id);
         $detailPresensis = DetailPresensi::with(['user.role', 'user.shift'])
             ->where('id_presensi', $id)
-            ->whereHas('user.role', function ($query) {
-                $query->where('role_name', 'Capster');
-            })
             ->get()
             ->map(function ($detail) {
                 return [
                     'id' => (string) $detail->user->id,
                     'name' => $detail->user->name,
-                    'role' => 'Capster',
+                    'role' => $detail->user->role ? $detail->user->role->role_name : '-',
                     'id_shift' => (string) $detail->user->id_shift,
                     'status' => $detail->status_presensi,
                 ];
@@ -319,5 +361,16 @@ class PresensiController extends Controller
             DB::rollBack();
             return redirect()->back()->with('error', 'Terjadi kesalahan server: ' . $e->getMessage());
         }
+    }
+
+    public function export(Request $request)
+    {
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        $createdBy = $request->input('created_by');
+
+        $fileName = 'presensi_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+
+        return Excel::download(new PresensiExport($startDate, $endDate, $createdBy), $fileName);
     }
 }

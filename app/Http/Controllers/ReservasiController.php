@@ -284,7 +284,7 @@ class ReservasiController extends Controller
         ]);
 
         try {
-            Log::info('📥 Mulai parsing CSV...');
+            Log::info('Mulai parsing CSV...');
             $file = $request->file('file');
             $path = $file->getRealPath();
 

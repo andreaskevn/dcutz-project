@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('presensis', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->date('waktu_presensi');
-            $table->string('created_by');
+            $table->uuid('id_user')->required();
+            $table->foreign('id_user')->references('id')->on('users');
             $table->timestamps();
         });
     }

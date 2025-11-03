@@ -5,6 +5,7 @@ import { Label } from "@/Components/ui/label";
 import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
+import { Toaster, toast } from "sonner";
 
 interface Role {
     id: string;
@@ -30,9 +31,37 @@ export default function CreateKaryawan({ roles, shifts }: Props) {
         id_shift: "",
     });
 
+    const resetForm = () => {
+        setData({
+            name: "",
+            email: "",
+            password: "",
+            id_role: "",
+            id_shift: "",
+        });
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route("users.store"));
+
+        if (!data.name || !data.id_role || !data.id_shift) {
+            toast.warning("User's name, role, and shift are required.");
+            return;
+        }
+        const toastId = toast.loading("Adding users...");
+
+        post(route("users.store"), {
+            onSuccess: () => {
+                toast.dismiss(toastId);
+                toast.success("Successfully adding users");
+                resetForm();
+            },
+            onError: (errors) => {
+                toast.dismiss(toastId);
+                toast.error("Failed adding users..");
+                console.error(errors);
+            },
+        });
     };
 
     return (
