@@ -43,6 +43,7 @@ class PresensiExport implements FromCollection, WithHeadings, WithMapping
             $rows[] = [
                 $presensi->id,
                 $presensi->waktu_presensi,
+                $presensi->created_at,
                 $presensi->user->name,
                 $detail->user->name,
                 $detail->user->role->role_name ?? '-',
@@ -59,6 +60,7 @@ class PresensiExport implements FromCollection, WithHeadings, WithMapping
         return [
             'ID Presensi',
             'Tanggal Presensi',
+            'Dibuat Pada',
             'Dibuat Oleh',
             'Nama Karyawan',
             'Role',
