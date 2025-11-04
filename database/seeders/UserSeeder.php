@@ -14,13 +14,12 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // ambil role "owner"
         $ownerRole = DB::table('roles')->where('role_name', 'owner')->first();
-        // ambil shift pertama (misalnya shift 1)
-        $shift = DB::table('shifts')->where('shift_name', 'shift 1')->first();
+        $capsterRole = DB::table('roles')->where('role_name', 'capster')->first();
+        $shifts = DB::table('shifts')->get();
 
-        if (!$ownerRole || !$shift) {
-            $this->command->warn('⚠️ Pastikan Role "owner" dan Shift "shift 1" sudah di-seed sebelum menjalankan UserSeeder.');
+        if (!$ownerRole || !$capsterRole || $shifts->isEmpty()) {
+            $this->command->warn('⚠️ Pastikan Role "owner" dan "capster" serta data shift sudah di-seed sebelum menjalankan UserSeeder.');
             return;
         }
 
@@ -30,10 +29,33 @@ class UserSeeder extends Seeder
             'email' => 'owner@dcutz.com',
             'password' => Hash::make('password123'),
             'id_role' => $ownerRole->id,
-            'id_shift' => $shift->id,
+            'id_shift' => $shifts->first()->id,
             'email_verified_at' => now(),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        $capsters = [
+            'Agis',
+            'Heru',
+            'Akbar',
+            'Rohman',
+            'Jack'
+        ];
+
+        foreach ($capsters as $name) {
+            DB::table('users')->insert([
+                'id' => Str::uuid(),
+                'name' => $name,
+                'email' => null,
+                'password' => null,
+                'id_role' => $capsterRole->id,
+                'id_shift' => $shifts->random()->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->command->info('✅ UserSeeder berhasil menambahkan Owner dan Capster.');
     }
 }

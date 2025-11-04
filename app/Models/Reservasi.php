@@ -10,19 +10,29 @@ class Reservasi extends Model
 
     protected $fillable = [
         'id',
-        'nama_pelanggan',
-        'nomor_telepon_pelanggan',
+        'id_pelanggan',
         'status_reservasi',
         'jam_reservasi',
         'tanggal_reservasi',
         'created_at',
         'updated_at',
         'total_harga',
+        'id_user',
     ];
 
     public function detail_reservasis()
     {
         return $this->hasMany(DetailReservasi::class, 'id_reservasi');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'id_user');
+    }
+
+    public function pelanggan()
+    {
+        return $this->belongsTo(Pelanggan::class, 'id_pelanggan');
     }
 
     protected $keyType = 'string';

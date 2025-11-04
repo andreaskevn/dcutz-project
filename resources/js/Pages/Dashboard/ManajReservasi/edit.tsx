@@ -10,6 +10,8 @@ import { DataTable } from "./data-table-layanans";
 import { ColumnDef } from "@tanstack/react-table";
 import { ClockCheck } from "lucide-react";
 import React, { useState, useEffect, useMemo } from "react";
+import { toast } from "sonner";
+
 
 interface Layanan {
     id: string;
@@ -23,11 +25,11 @@ interface Status {
 
 interface Reservasi {
     id: string;
-    nama_pelanggan: string;
-    nomor_telepon_pelanggan: string;
+    id_pelanggan: string;
     tanggal_reservasi: string;
     jam_reservasi: string;
     status_reservasi: string;
+    id_user: string;
 }
 
 interface Props {
@@ -35,6 +37,19 @@ interface Props {
     layanans: Layanan[];
     statuses: Status[];
     selectedLayananIds: string[];
+    capster: User[];
+    pelanggans: Pelanggan[];
+}
+
+interface User {
+    id: string;
+    name: string;
+}
+
+interface Pelanggan {
+    id: string;
+    nama_pelanggan: string;
+    nomor_telepon_pelanggan: string;
 }
 
 export default function EditReservasi({
@@ -42,17 +57,22 @@ export default function EditReservasi({
     layanans,
     statuses,
     selectedLayananIds: initialSelectedIds,
+    capster,
+    pelanggans
 }: Props) {
     const { data, setData, put, processing, errors } = useForm({
-        nama_pelanggan: reservasi.nama_pelanggan || "",
-        nomor_telepon_pelanggan: reservasi.nomor_telepon_pelanggan || "",
+        id_pelanggan: reservasi.id_pelanggan || "",
         status_reservasi: reservasi.status_reservasi || "Diproses",
         tanggal_reservasi: reservasi.tanggal_reservasi || "",
         jam_reservasi: reservasi.jam_reservasi || "",
         id_layanan: initialSelectedIds || [],
+        id_user: reservasi.id_user || "",
+        nama_pelanggan: "",
+        nomor_telepon_pelanggan: "",
     });
-
     const [selectedLayananIds, setSelectedLayananIds] = useState<string[]>(initialSelectedIds);
+    const [isAddingNewCustomer, setIsAddingNewCustomer] = useState(false);
+
 
     useEffect(() => {
         setData("id_layanan", selectedLayananIds);
@@ -66,9 +86,52 @@ export default function EditReservasi({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log("Data reservasi yang akan dikirim:", data); 
-        put(route("reservasi.update", reservasi.id));
+
+        const pelangganTerpilih = !!data.id_pelanggan;
+
+        const pelangganBaruLengkap =
+            !!data.nama_pelanggan && !!data.nomor_telepon_pelanggan;
+
+        if (
+            (!pelangganTerpilih && !pelangganBaruLengkap) ||
+            !data.id_layanan.length ||
+            !data.tanggal_reservasi ||
+            !data.jam_reservasi
+        ) {
+            toast.warning("Harap lengkapi semua field sebelum menyimpan.");
+            return;
+        }
+
+        const toastId = toast.loading("Memperbarui reservasi...");
+
+        put(route("reservasi.update", reservasi.id), {
+            preserveScroll: true,
+
+            onSuccess: () => {
+                toast.dismiss(toastId);
+                toast.success("Reservasi berhasil diperbarui", {
+                    description: "Perubahan data reservasi telah disimpan.",
+                });
+            },
+
+            onError: (errors) => {
+                toast.dismiss(toastId);
+
+                const firstError =
+                    Object.values(errors)[0] ||
+                    "Terjadi kesalahan saat memperbarui data reservasi.";
+
+                toast.error("Gagal memperbarui reservasi", {
+                    description: firstError as string,
+                });
+            },
+
+            onFinish: () => {
+                toast.dismiss(toastId);
+            },
+        });
     };
+
 
     const columns: ColumnDef<Layanan>[] = [
         { accessorKey: "nama_layanan", header: "Nama Layanan" },
@@ -90,22 +153,75 @@ export default function EditReservasi({
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-2">
-                                <Label htmlFor="name">Nama</Label>
-                                <Input
-                                    id="name"
-                                    value={data.nama_pelanggan}
-                                    onChange={(e) => setData("nama_pelanggan", e.target.value)}
-                                />
-                            </div>
+                                <Label htmlFor="id_pelanggan">Pelanggan</Label>
+                                {!isAddingNewCustomer ? (
+                                    <>
+                                        <Select
+                                            onValueChange={(value) => setData("id_pelanggan", value)}
+                                            defaultValue={data.id_pelanggan}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue placeholder="Pilih pelanggan" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {pelanggans.map((pelanggan) => (
+                                                    <SelectItem key={pelanggan.id} value={pelanggan.id}>
+                                                        {pelanggan.nama_pelanggan} — {pelanggan.nomor_telepon_pelanggan}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="nomor_telepon_pelanggan">Nomor Telepon</Label>
-                                <Input
-                                    id="nomor_telepon_pelanggan"
-                                    type="number"
-                                    value={data.nomor_telepon_pelanggan}
-                                    onChange={(e) => setData("nomor_telepon_pelanggan", e.target.value)}
-                                />
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="mt-2"
+                                            onClick={() => {
+                                                setIsAddingNewCustomer(true);
+                                                setData("id_pelanggan", "");
+                                                setData("nama_pelanggan", "");
+                                                setData("nomor_telepon_pelanggan", "");
+                                            }}
+                                        >
+                                            Tambah pelanggan baru
+                                        </Button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Input
+                                            id="nama_pelanggan"
+                                            placeholder="Nama pelanggan baru"
+                                            value={data.nama_pelanggan}
+                                            onChange={(e) => setData("nama_pelanggan", e.target.value)}
+                                        />
+                                        {errors.nama_pelanggan && (
+                                            <p className="text-sm text-red-500">{errors.nama_pelanggan}</p>
+                                        )}
+
+                                        <Input
+                                            id="nomor_telepon_pelanggan"
+                                            placeholder="Nomor telepon"
+                                            value={data.nomor_telepon_pelanggan}
+                                            onChange={(e) => setData("nomor_telepon_pelanggan", e.target.value)}
+                                        />
+                                        {errors.nomor_telepon_pelanggan && (
+                                            <p className="text-sm text-red-500">{errors.nomor_telepon_pelanggan}</p>
+                                        )}
+
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="mt-2"
+                                            onClick={() => {
+                                                setIsAddingNewCustomer(false);
+                                                setData("nama_pelanggan", "");
+                                                setData("nomor_telepon_pelanggan", "");
+                                            }}
+                                        >
+                                            Batal tambah pelanggan
+                                        </Button>
+                                    </>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -118,6 +234,7 @@ export default function EditReservasi({
                                             setData("tanggal_reservasi", formattedDate);
                                         }}
                                     />
+                                    {errors.tanggal_reservasi && <p className="text-sm text-red-500">{errors.tanggal_reservasi}</p>}
                                 </div>
 
                                 <div className="space-y-2">
@@ -130,8 +247,28 @@ export default function EditReservasi({
                                         onChange={(e) => setData("jam_reservasi", e.target.value)}
                                     />
                                 </div>
+                                {errors.jam_reservasi && <p className="text-sm text-red-500">{errors.jam_reservasi}</p>}
                             </div>
-                            
+
+                            <div className="space-y-2">
+                                <Label htmlFor="id_user">Capster</Label>
+                                <Select
+                                    onValueChange={(value) => setData("id_user", value)}
+                                    defaultValue={data.id_user}
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Pilih Capster" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {capster.map((capster) => (
+                                            <SelectItem key={capster.id} value={capster.id}>
+                                                {capster.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                {errors.id_user && <p className="text-sm">{errors.id_user}</p>}
+                            </div>
 
                             <div className="space-y-2">
                                 <Label>Layanan</Label>

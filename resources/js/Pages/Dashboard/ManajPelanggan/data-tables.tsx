@@ -24,31 +24,24 @@ import {
 
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
-import { Check } from "lucide-react";
-import { Checkbox } from "@/Components/ui/checkbox";
-import { ScrollArea, ScrollBar } from "@/Components/ui/scroll-area"
-
-interface Layanan {
-    id: string;
-    nama_layanan: string;
-    harga_layanan: number;
-}
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
-    selectedIds?: string[];
-    setSelectedIds?: React.Dispatch<React.SetStateAction<string[]>>;
+    id?: string;
+    roles?: { id: string; role_name: string }[];
+    shifts?: { id: string; shift_name: string }[];
 }
 
-export function DataTable<TData extends { id: string }, TValue>({
+export function DataTable<TData, TValue>({
     columns,
     data,
-    selectedIds = [],
-    setSelectedIds,
+    roles = [],
+    shifts = [],
 }: DataTableProps<TData, TValue>) {
+    const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-
     const table = useReactTable({
         data,
         columns,
@@ -58,54 +51,72 @@ export function DataTable<TData extends { id: string }, TValue>({
         onColumnFiltersChange: setColumnFilters,
         getFilteredRowModel: getFilteredRowModel(),
         state: {
+            sorting,
             columnFilters,
         },
     });
 
-    const pageRowIds = table.getRowModel().rows.map(row => row.original.id);
-    const allRowIds = React.useMemo(() => data.map(item => item.id), [data]);
-
-    const toggleRow = (id: string) => {
-        setSelectedIds?.((prev) => {
-            const newValue = prev.includes(id)
-                ? prev.filter(x => x !== id)
-                : [...prev, id];
-
-            console.log("Nilai 'selectedIds' yang baru:", newValue);
-            return newValue;
-        });
-
-    };
-
-    const toggleSelectAll = () => {
-        console.log("Tombol select all (SEMUA DATA) diklik");
-
-        setSelectedIds?.((prev) => {
-            const allSelected = allRowIds.length > 0 && allRowIds.every(id => prev.includes(id));
-
-            console.log("Nilai 'selectedIds' setelah toggleSelectAll:", allSelected ? [] : allRowIds);
-            if (allSelected) {
-                return [];
-            } else {
-                return allRowIds;
-            }
-        });
-
-    };
+    console.log("data ", data);
+    console.log("roles ", roles);
+    console.log("shifts ", shifts);
 
     return (
         <div>
+            <div className="flex flex-wrap items-center gap-4 py-4">
+                <Input
+                    placeholder="Filter names..."
+                    value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+                    onChange={(event) =>
+                        table.getColumn("name")?.setFilterValue(event.target.value)
+                    }
+                    className="max-w-sm"
+                />
+                {roles.length > 0 && (
+                    <Select
+                        onValueChange={(value) =>
+                            table.getColumn("role")?.setFilterValue(value === "all" ? "" : value)
+                        }
+                    >
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Filter Role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Role</SelectItem>
+                            {roles.map((role) => (
+                                <SelectItem key={role.id} value={role.role_name}>
+                                    {role.role_name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                )}
+
+                {shifts.length > 0 && (
+                    <Select
+                        onValueChange={(value) =>
+                            table.getColumn("shift")?.setFilterValue(value === "all" ? "" : value)
+                        }
+                    >
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Filter Shift" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Shift</SelectItem>
+                            {shifts.map((shift) => (
+                                <SelectItem key={shift.id} value={shift.shift_name}>
+                                    {shift.shift_name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                )}
+            </div>
+
             <div className="w-full overflow-x-auto rounded-md border border-solid">
-                <Table className="overflow-hidden">
+                <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
-                                <TableHead className="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wide">
-                                    <Checkbox
-                                        checked={pageRowIds.every(id => selectedIds.includes(id)) && pageRowIds.length > 0}
-                                        onCheckedChange={() => toggleSelectAll()}
-                                    />
-                                </TableHead>
                                 {headerGroup.headers.map((header) => (
                                     <TableHead
                                         key={header.id}
@@ -127,16 +138,9 @@ export function DataTable<TData extends { id: string }, TValue>({
                             table.getRowModel().rows.map((row) => (
                                 <TableRow
                                     key={row.id}
-                                    data-state={selectedIds.includes(row.original.id) ? "selected" : ""}
+                                    data-state={row.getIsSelected() && "selected"}
                                     className="transition-colors"
                                 >
-                                    <TableCell className="px-6 py-3 text-sm text-center">
-                                        <Checkbox
-                                            checked={selectedIds.includes(row.original.id)}
-                                            onCheckedChange={() => toggleRow(row.original.id)}
-                                        />
-
-                                    </TableCell>
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell key={cell.id} className="px-6 py-3 text-sm">
                                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -147,7 +151,7 @@ export function DataTable<TData extends { id: string }, TValue>({
                         ) : (
                             <TableRow>
                                 <TableCell
-                                    colSpan={columns.length + 1}
+                                    colSpan={columns.length}
                                     className="h-24 text-center"
                                 >
                                     Tidak ada data.
@@ -175,6 +179,7 @@ export function DataTable<TData extends { id: string }, TValue>({
                     Next
                 </Button>
             </div>
+
         </div>
     );
 }

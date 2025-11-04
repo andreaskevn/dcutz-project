@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             ShiftSeeder::class,
             UserSeeder::class,
             LayananSeeder::class,
+            PelangganSeeder::class,
         ]);
     }
 }

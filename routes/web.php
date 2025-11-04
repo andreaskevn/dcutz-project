@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PelangganController;
 use App\Http\Controllers\PresensiController;
 use App\Http\Controllers\ReservasiController;
 use App\Http\Controllers\ProfileController;
@@ -54,6 +55,15 @@ Route::middleware('auth')->group(function () {
     Route::put('/reservasi/{id}', [ReservasiController::class, 'update'])->name('reservasi.update');
     Route::delete('/reservasi/{id}', [ReservasiController::class, 'destroy'])->name('reservasi.destroy');
     Route::post('/reservasi/import', [ReservasiController::class, 'import'])->name('reservasi.import.store');
+
+
+    Route::get('/pelanggan', [PelangganController::class, 'index'])->name('pelanggan.index');
+    Route::get('/pelanggan/create', [PelangganController::class, 'create'])->name('pelanggan.create');
+    Route::post('/pelanggan', [PelangganController::class, 'store'])->name('pelanggan.store');
+    Route::get('/pelanggan/{id}/edit', [PelangganController::class, 'edit'])->name('pelanggan.edit');
+    Route::put('/pelanggan/{id}', [PelangganController::class, 'update'])->name('pelanggan.update');
+    Route::delete('/pelanggan/{id}', [PelangganController::class, 'destroy'])->name('pelanggan.destroy');
+    Route::post('/pelanggan/import', [PelangganController::class, 'import'])->name('pelanggan.import.store');
 });
 
 require __DIR__ . '/auth.php';

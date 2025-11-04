@@ -1,4 +1,4 @@
-import { BookOpenCheck, Calendar, Home, Inbox, LayoutDashboardIcon, Search, Settings, User } from "lucide-react"
+import { BookOpenCheck, Calendar, Home, Inbox, LayoutDashboardIcon, Search, Settings, User, User2, UserCogIcon } from "lucide-react"
 
 import {
   Sidebar,
@@ -32,6 +32,11 @@ const items = [
     title: "Manajemen User",
     url: "/users",
     icon: User,
+  },
+  {
+    title: "Manajemen Pelanggan",
+    url: "/pelanggan",
+    icon: UserCogIcon,
   },
   {
     title: "Profil User",

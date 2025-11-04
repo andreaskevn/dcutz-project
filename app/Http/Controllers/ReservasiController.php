@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Reservasi;
 use App\Models\Layanan;
 use App\Models\DetailReservasi;
+use App\Models\Pelanggan;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
+
 
 
 class ReservasiController extends Controller
@@ -23,12 +26,12 @@ class ReservasiController extends Controller
         $reservasis = Reservasi::with('detail_reservasis.layanans')->get()->map(function ($reservasi) {
             return [
                 'id' => $reservasi->id,
-                'nama_pelanggan' => $reservasi->nama_pelanggan,
-                'nomor_telepon_pelanggan' => $reservasi->nomor_telepon_pelanggan,
+                'id_pelanggan' => $reservasi->pelanggan->nama_pelanggan,
                 'status_reservasi' => $reservasi->status_reservasi,
                 'tanggal_reservasi' => $reservasi->tanggal_reservasi,
                 'jam_reservasi' => $reservasi->jam_reservasi,
                 'created_at' => $reservasi->created_at->format('Y-m-d H:i:s'),
+                'id_user' => $reservasi->user->name,
                 'layanans' => $reservasi->detail_reservasis->map(function ($detail) {
                     return $detail->layanans ? $detail->layanans->nama_layanan : null;
                 })->filter()->values()->all(),
@@ -48,8 +51,15 @@ class ReservasiController extends Controller
     public function create()
     {
         $layanans = Layanan::select('id', 'nama_layanan', 'harga_layanan')->get();
+        $capster = User::join('roles', 'users.id_role', '=', 'roles.id')
+            ->whereRaw('LOWER(roles.role_name) = ?', ['capster'])
+            ->select('users.id', 'users.name')
+            ->get();
+        $pelanggans = Pelanggan::select('id', 'nama_pelanggan', 'nomor_telepon_pelanggan')->get();
         return Inertia::render('Dashboard/ManajReservasi/add', [
             'layanans' => $layanans,
+            'capster' => $capster,
+            'pelanggans' => $pelanggans,
             'statuses' => [
                 ['status_name' => 'Diproses'],
                 ['status_name' => 'Selesai'],
@@ -63,16 +73,43 @@ class ReservasiController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nama_pelanggan'          => 'required|string|max:255',
-            'nomor_telepon_pelanggan' => 'required|string|max:20',
+            'id_pelanggan'            => 'nullable|string|exists:pelanggans,id',
+            'nama_pelanggan'          => 'required_without:id_pelanggan|string|max:255',
+            'nomor_telepon_pelanggan' => 'required_without:id_pelanggan|string|max:20',
             'tanggal_reservasi'       => 'required|date',
             'jam_reservasi'           => 'required|date_format:H:i:s',
             'id_layanan'              => 'required|array',
             'id_layanan.*'            => 'required|string|exists:layanans,id',
             'status_reservasi'        => 'required|in:Diproses,Selesai',
+            'id_user'                 => 'required|exists:users,id',
         ]);
 
-        Log::info('Validated data:', $validated);
+        Log::info('🧾 Validated data:', $validated);
+
+        if (!empty($validated['id_pelanggan'])) {
+            $pelanggan = Pelanggan::find($validated['id_pelanggan']);
+            Log::info('Pelanggan lama ditemukan:', ['id' => $pelanggan->id]);
+        } else {
+            $pelanggan = Pelanggan::firstOrCreate(
+                ['nomor_telepon_pelanggan' => $validated['nomor_telepon_pelanggan']],
+                [
+                    'id' => Str::uuid(),
+                    'nama_pelanggan' => $validated['nama_pelanggan'],
+                ]
+            );
+            Log::info('Pelanggan baru dibuat atau ditemukan:', $pelanggan->toArray());
+        }
+
+        $isReservasiExists = Reservasi::where('id_user', $validated['id_user'])
+            ->where('tanggal_reservasi', $validated['tanggal_reservasi'])
+            ->where('jam_reservasi', $validated['jam_reservasi'])
+            ->exists();
+
+        if ($isReservasiExists) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['tanggal_reservasi' => 'Capster sudah memiliki reservasi pada tanggal dan jam tersebut.']);
+        }
 
         DB::beginTransaction();
 
@@ -85,18 +122,20 @@ class ReservasiController extends Controller
                 }
             }
 
-            Log::info('Total harga layanan:', ['total_harga' => $totalHarga]);
+            Log::info('💵 Total harga layanan:', ['total_harga' => $totalHarga]);
 
-            $reservasiData = array_merge(
-                $request->except('id_layanan'),
-                [
-                    'id' => Str::uuid(),
-                    'total_harga' => $totalHarga,
-                ]
-            );
+            $reservasiData = [
+                'id' => Str::uuid(),
+                'id_user' => $validated['id_user'],
+                'id_pelanggan' => $pelanggan->id,
+                'tanggal_reservasi' => $validated['tanggal_reservasi'],
+                'jam_reservasi' => $validated['jam_reservasi'],
+                'status_reservasi' => $validated['status_reservasi'],
+                'total_harga' => $totalHarga,
+            ];
 
             $reservasi = Reservasi::create($reservasiData);
-            Log::info('Reservasi berhasil dibuat:', $reservasi->toArray());
+            Log::info('✅ Reservasi berhasil dibuat:', $reservasi->toArray());
 
             foreach ($validated['id_layanan'] as $idLayanan) {
                 $layanan = Layanan::find($idLayanan);
@@ -108,7 +147,7 @@ class ReservasiController extends Controller
                     'subtotal' => $layanan ? $layanan->harga_layanan : 0,
                 ]);
 
-                Log::info('DetailReservasi dibuat:', [
+                Log::info('🧾 DetailReservasi dibuat:', [
                     'id' => $detail->id,
                     'id_layanan' => $idLayanan,
                     'subtotal' => $layanan ? $layanan->harga_layanan : 0,
@@ -121,13 +160,14 @@ class ReservasiController extends Controller
             return redirect()->route('reservasi.index')->with('success', 'Reservasi berhasil disimpan.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Gagal menyimpan reservasi: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            Log::error('❌ Gagal menyimpan reservasi: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
 
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Terjadi kesalahan. Reservasi gagal disimpan.');
         }
     }
+
 
     /**
      * Display the specified resource.
@@ -144,6 +184,11 @@ class ReservasiController extends Controller
     {
         $reservasi = Reservasi::with('detail_reservasis.layanans')->findOrFail($id);
         $layanans = Layanan::all();
+        $pelanggans = Pelanggan::all();
+        $capster = User::join('roles', 'users.id_role', '=', 'roles.id')
+            ->whereRaw('LOWER(roles.role_name) = ?', ['capster'])
+            ->select('users.id', 'users.name')
+            ->get();
         $statuses = [
             ['status_name' => 'Diproses'],
             ['status_name' => 'Selesai'],
@@ -157,6 +202,8 @@ class ReservasiController extends Controller
             'reservasi' => $reservasi,
             'layanans' => $layanans,
             'statuses' => $statuses,
+            'capster' => $capster,
+            'pelanggans' => $pelanggans,
             'selectedLayananIds' => $selectedLayananIds,
         ]);
     }
@@ -167,16 +214,44 @@ class ReservasiController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'nama_pelanggan'          => 'required|string|max:255',
-            'nomor_telepon_pelanggan' => 'required|string|max:20',
+            'id_pelanggan'            => 'nullable|string|exists:pelanggans,id',
+            'nama_pelanggan'          => 'required_without:id_pelanggan|string|max:255',
+            'nomor_telepon_pelanggan' => 'required_without:id_pelanggan|string|max:20',
             'tanggal_reservasi'       => 'required|date',
             'jam_reservasi'           => 'required|date_format:H:i:s',
             'id_layanan'              => 'required|array|min:1',
             'id_layanan.*'            => 'required|string|exists:layanans,id',
             'status_reservasi'        => 'required|in:Diproses,Selesai',
+            'id_user'                 => 'required|exists:users,id',
         ]);
 
-        Log::info('Validated update data:', $validated);
+        Log::info('🧾 Validated update data:', $validated);
+
+        if (!empty($validated['id_pelanggan'])) {
+            $pelanggan = Pelanggan::find($validated['id_pelanggan']);
+            Log::info('Pelanggan lama dipakai saat update:', ['id' => $pelanggan->id]);
+        } else {
+            $pelanggan = Pelanggan::firstOrCreate(
+                ['nomor_telepon_pelanggan' => $validated['nomor_telepon_pelanggan']],
+                [
+                    'id' => Str::uuid(),
+                    'nama_pelanggan' => $validated['nama_pelanggan'],
+                ]
+            );
+            Log::info('Pelanggan baru dibuat/digunakan saat update:', $pelanggan->toArray());
+        }
+
+        $isReservasiExists = Reservasi::where('id_user', $validated['id_user'])
+            ->where('tanggal_reservasi', $validated['tanggal_reservasi'])
+            ->where('jam_reservasi', $validated['jam_reservasi'])
+            ->where('id', '!=', $id)
+            ->exists();
+
+        if ($isReservasiExists) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['tanggal_reservasi' => 'Capster sudah memiliki reservasi pada tanggal dan jam tersebut.']);
+        }
 
         DB::beginTransaction();
 
@@ -189,23 +264,23 @@ class ReservasiController extends Controller
                 }
             }
 
-            Log::info('Total harga layanan (update):', ['total_harga' => $totalHarga]);
+            Log::info('💵 Total harga layanan (update):', ['total_harga' => $totalHarga]);
 
             $reservasi = Reservasi::findOrFail($id);
 
             $reservasi->update([
-                'nama_pelanggan'          => $validated['nama_pelanggan'],
-                'nomor_telepon_pelanggan' => $validated['nomor_telepon_pelanggan'],
-                'tanggal_reservasi'       => $validated['tanggal_reservasi'],
-                'jam_reservasi'           => $validated['jam_reservasi'],
-                'status_reservasi'        => $validated['status_reservasi'],
-                'total_harga'             => $totalHarga,
+                'tanggal_reservasi' => $validated['tanggal_reservasi'],
+                'jam_reservasi'     => $validated['jam_reservasi'],
+                'status_reservasi'  => $validated['status_reservasi'],
+                'total_harga'       => $totalHarga,
+                'id_user'           => $validated['id_user'],
+                'id_pelanggan'      => $pelanggan->id,
             ]);
 
-            Log::info('Reservasi berhasil diupdate:', $reservasi->toArray());
+            Log::info('✅ Reservasi berhasil diupdate:', $reservasi->toArray());
 
             $reservasi->detail_reservasis()->delete();
-            Log::info('Detail reservasi lama dihapus untuk reservasi ID: ' . $reservasi->id);
+            Log::info('🧾 Detail reservasi lama dihapus untuk ID: ' . $reservasi->id);
 
             foreach ($validated['id_layanan'] as $idLayanan) {
                 $layanan = Layanan::find($idLayanan);
@@ -217,7 +292,7 @@ class ReservasiController extends Controller
                     'subtotal' => $layanan ? $layanan->harga_layanan : 0,
                 ]);
 
-                Log::info('DetailReservasi (update) dibuat:', [
+                Log::info('📄 DetailReservasi (update) dibuat:', [
                     'id' => $detail->id,
                     'id_layanan' => $idLayanan,
                     'subtotal' => $layanan ? $layanan->harga_layanan : 0,
@@ -225,18 +300,19 @@ class ReservasiController extends Controller
             }
 
             DB::commit();
-            Log::info('Transaksi update berhasil di-commit untuk reservasi ID: ' . $reservasi->id);
+            Log::info('🎉 Transaksi update berhasil di-commit untuk reservasi ID: ' . $reservasi->id);
 
             return redirect()->route('reservasi.index')->with('success', 'Reservasi berhasil diperbarui.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Gagal memperbarui reservasi: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            Log::error('❌ Gagal memperbarui reservasi: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
 
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Terjadi kesalahan. Reservasi gagal diperbarui.');
         }
     }
+
 
 
     /**

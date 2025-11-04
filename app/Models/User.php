@@ -58,4 +58,9 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Shift::class, 'id_shift');
     }
+
+    public function reservasis()
+    {
+        return $this->hasMany(Reservasi::class, 'id_user');
+    }
 }

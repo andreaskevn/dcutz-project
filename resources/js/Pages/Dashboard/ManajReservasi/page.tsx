@@ -21,16 +21,17 @@ import { convertDate } from "@/lib/convertDate";
 import { Dialog, DialogTrigger } from "@/Components/ui/dialog";
 import ImportPresensiModal from "./import-csv";
 import { Plus, Upload } from "lucide-react";
+import { useEffect } from "react";
+import { usePage } from "@inertiajs/react";
+import { toast } from "sonner";
 
 export type Reservasi = {
   id: string;
-  nama_pelanggan: string;
-  nomor_telepon_pelanggan: string;
   status_reservasi: string;
   layanans: string[];
   tanggal_reservasi: string;
   jam_reservasi: string;
-  users: string;
+  id_user: string;
   created_at: string;
 };
 
@@ -43,13 +44,31 @@ interface Layanan {
 interface Props {
   reservasis: Reservasi[];
   layanans: Layanan[];
+  pelanggans: Pelanggan[];
+}
+
+interface Pelanggan {
+  id: string;
+  nama_pelanggan: string;
+  nomor_telepon_pelanggan: string;
 }
 
 
-export default function IndexPage({ reservasis, layanans }: Props) {
+export default function IndexPage({ reservasis, layanans, pelanggans }: Props) {
   const [alertMessage, setAlertMessage] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  console.log("reservasis", reservasis);
+  // console.log("reservasis", reservasis);
+  const { props } = usePage();
+  const flash = props.flash as { success?: string; error?: string };
+
+  useEffect(() => {
+    if (flash?.success) {
+      toast.success(flash.success);
+    }
+    if (flash?.error) {
+      toast.error(flash.error);
+    }
+  }, [flash]);
 
   const handleDelete = (id: string) => {
     router.delete(route("reservasi.destroy", id), {
@@ -67,8 +86,7 @@ export default function IndexPage({ reservasis, layanans }: Props) {
 
   const columns: ColumnDef<Reservasi>[] = [
     // { accessorKey: "id", header: "ID" },
-    { accessorKey: "nama_pelanggan", header: "Nama Pelanggan" },
-    { accessorKey: "nomor_telepon_pelanggan", header: "Nomor Telepon Pelanggan" },
+    { accessorKey: "id_pelanggan", header: "Nama Pelanggan" },
     { accessorKey: "status_reservasi", header: "Status Reservasi" },
     {
       accessorKey: "layanans",
@@ -88,6 +106,7 @@ export default function IndexPage({ reservasis, layanans }: Props) {
     },
     { accessorKey: "tanggal_reservasi", header: "Tanggal Reservasi" },
     { accessorKey: "jam_reservasi", header: "Jam Reservasi" },
+    { accessorKey: "id_user", header: "Capster" },
     {
       accessorKey: "created_at", header: "Created At",
       cell: ({ row }) => {
@@ -162,7 +181,7 @@ export default function IndexPage({ reservasis, layanans }: Props) {
                 onOpenChange={setIsImportModalOpen}
               />
             </Dialog>
-            
+
             <Link href={route("reservasi.create")}>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
