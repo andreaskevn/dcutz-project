@@ -172,10 +172,33 @@ class ReservasiController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Reservasi $reservasi)
+    public function show($id)
     {
-        //
+        $reservasi = Reservasi::with(['pelanggan', 'user', 'detail_reservasis.layanans'])->findOrFail($id);
+
+        $layanans = $reservasi->detail_reservasis->map(function ($detail) {
+            return [
+                'id' => $detail->layanans->id,
+                'nama_layanan' => $detail->layanans->nama_layanan,
+                'harga_layanan' => $detail->layanans->harga_layanan,
+                'subtotal' => $detail->subtotal,
+            ];
+        });
+
+        return Inertia::render('Dashboard/ManajReservasi/detail', [
+            'reservasi' => [
+                'id' => $reservasi->id,
+                'tanggal_reservasi' => $reservasi->tanggal_reservasi,
+                'jam_reservasi' => $reservasi->jam_reservasi,
+                'status_reservasi' => $reservasi->status_reservasi,
+                'total_harga' => $reservasi->total_harga,
+            ],
+            'pelanggan' => $reservasi->pelanggan,
+            'capster' => $reservasi->user,
+            'layanans' => $layanans,
+        ]);
     }
+
 
     /**
      * Show the form for editing the specified resource.

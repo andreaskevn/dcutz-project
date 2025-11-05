@@ -40,12 +40,16 @@ interface Props {
     end_date?: string;
     created_by?: string;
   };
+  auth: {
+    role: string | null;
+  };
 }
 
-export default function IndexPage({ presensis, users, filters }: Props) {
+export default function IndexPage({ presensis, users, filters, auth }: Props) {
   const { props } = usePage();
   const flash = props.flash as { success?: string; error?: string };
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const userRole = auth?.role;
 
   useEffect(() => {
     if (flash?.success) {
@@ -110,20 +114,21 @@ export default function IndexPage({ presensis, users, filters }: Props) {
           <h1 className="text-2xl font-semibold">Daftar Presensi</h1>
 
           <div className="flex items-center gap-3">
-
-            <Button
-              variant="outline"
-              onClick={() => {
-                const params = new URLSearchParams({
-                  start_date: filters.start_date ?? "",
-                  end_date: filters.end_date ?? "",
-                  created_by: filters.created_by ?? "",
-                }).toString();
-                window.open(route("presensi.export") + "?" + params, "_blank");
-              }}
-            >
-              Export Excel
-            </Button>
+            {userRole === "Owner" && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const params = new URLSearchParams({
+                    start_date: filters.start_date ?? "",
+                    end_date: filters.end_date ?? "",
+                    created_by: filters.created_by ?? "",
+                  }).toString();
+                  window.open(route("presensi.export") + "?" + params, "_blank");
+                }}
+              >
+                Export Excel
+              </Button>
+            )}
             <Link href={route("presensi.create")}>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />

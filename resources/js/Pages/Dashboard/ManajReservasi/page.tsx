@@ -126,6 +126,12 @@ export default function IndexPage({ reservasis, layanans, pelanggans }: Props) {
             >
               Edit
             </Button>
+            <Button
+              variant="secondary"
+              onClick={() => router.visit(route("reservasi.show", { id: presensiItem.id }))}
+            >
+              Detail
+            </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive">Hapus</Button>

@@ -57,6 +57,10 @@ class PresensiController extends Controller
                 'end_date' => $request->end_date,
                 'id_user' => $request->id_user,
             ],
+            'auth' => [
+                'user' => Auth::user(),
+                'role' => Auth::user()->role ? Auth::user()->role->role_name : null,
+            ],
         ]);
     }
 

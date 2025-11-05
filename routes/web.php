@@ -5,18 +5,27 @@ use App\Http\Controllers\PresensiController;
 use App\Http\Controllers\ReservasiController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\HomePageController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-});
+// Route::get('/', function () {
+//     return Inertia::render('Welcome', [
+//         'canLogin' => Route::has('login'),
+//         'canRegister' => Route::has('register'),
+//         'laravelVersion' => Application::VERSION,
+//         'phpVersion' => PHP_VERSION,
+//         HomePageController::class,
+//         'index'
+//     ]);
+// });
+
+Route::get('/', [HomePageController::class, 'index'])->name('home.index');
+Route::post('/', [HomePageController::class, 'store'])->name('home.store');
+Route::get('/check-pelanggan', [HomePageController::class, 'checkPelanggan'])
+    ->name('home.checkPelanggan')
+    ->withoutMiddleware(['inertia']);
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard/page');
@@ -52,6 +61,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/reservasi/create', [ReservasiController::class, 'create'])->name('reservasi.create');
     Route::post('/reservasi', [ReservasiController::class, 'store'])->name('reservasi.store');
     Route::get('/reservasi/{id}/edit', [ReservasiController::class, 'edit'])->name('reservasi.edit');
+    Route::get('/reservasi/{id}/detail', [ReservasiController::class, 'show'])->name('reservasi.show');
     Route::put('/reservasi/{id}', [ReservasiController::class, 'update'])->name('reservasi.update');
     Route::delete('/reservasi/{id}', [ReservasiController::class, 'destroy'])->name('reservasi.destroy');
     Route::post('/reservasi/import', [ReservasiController::class, 'import'])->name('reservasi.import.store');
