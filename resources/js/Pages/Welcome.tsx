@@ -137,7 +137,6 @@ export default function Home({ layanans, capsters, auth }: HomeProps) {
 
             <Toaster position="top-center" richColors />
 
-            {/* Hero Section */}
             <section
                 className="relative h-[400px] flex items-center justify-center text-center text-white"
                 style={{

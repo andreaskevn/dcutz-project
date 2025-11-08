@@ -37,10 +37,11 @@ class ReservasiController extends Controller
                 })->filter()->values()->all(),
             ];
         });
-
+        $pelanggans = Pelanggan::select('id', 'nama_pelanggan', 'nomor_telepon_pelanggan')->get();
         // $layanan = Layanan::all();
         return Inertia::render('Dashboard/ManajReservasi/page', [
             'reservasis' => $reservasis->toArray(),
+            'pelanggans' => $pelanggans,
             // 'layanans' => $layanan,
         ]);
     }
@@ -205,7 +206,7 @@ class ReservasiController extends Controller
      */
     public function edit($id)
     {
-        $reservasi = Reservasi::with('detail_reservasis.layanans')->findOrFail($id);
+        $reservasi = Reservasi::with('detail_reservasis.layanans', 'pelanggan')->findOrFail($id);
         $layanans = Layanan::all();
         $pelanggans = Pelanggan::all();
         $capster = User::join('roles', 'users.id_role', '=', 'roles.id')
@@ -390,7 +391,6 @@ class ReservasiController extends Controller
             $firstLine = fgets(fopen($path, 'r'));
             $delimiter = str_contains($firstLine, ';') ? ';' : ',';
 
-
             $rows = array_map(fn($line) => str_getcsv($line, $delimiter), file($path));
             $header = array_map('trim', array_shift($rows));
 
@@ -403,7 +403,8 @@ class ReservasiController extends Controller
                 'tanggal_reservasi',
                 'jam_reservasi',
                 'status_reservasi',
-                'nama_layanan'
+                'nama_layanan',
+                'capster',
             ];
 
             $missingColumns = array_diff($requiredColumns, $header);
@@ -425,6 +426,7 @@ class ReservasiController extends Controller
                     'jam_reservasi' => 'required|date_format:H:i:s',
                     'status_reservasi' => 'required|in:Diproses,Selesai',
                     'nama_layanan' => 'required|string',
+                    'capster' => 'required|string',
                 ]);
 
                 if ($validator->fails()) {
@@ -433,6 +435,25 @@ class ReservasiController extends Controller
                         "Baris ke-" . ($index + 2) => implode(', ', $validator->errors()->all())
                     ]);
                 }
+
+                $pelanggan = Pelanggan::firstOrCreate(
+                    ['nomor_telepon_pelanggan' => trim($rowData['nomor_telepon_pelanggan'])],
+                    [
+                        'id' => Str::uuid(),
+                        'nama_pelanggan' => trim($rowData['nama_pelanggan']),
+                    ]
+                );
+                Log::info('👤 Pelanggan ditemukan/dibuat:', $pelanggan->toArray());
+
+                $capster = User::where('name', 'like', trim($rowData['capster']))->first();
+                if (!$capster) {
+                    DB::rollBack();
+                    return back()->withErrors([
+                        "Baris ke-" . ($index + 2) =>
+                        "User/capster dengan nama '{$rowData['capster']}' tidak ditemukan."
+                    ]);
+                }
+                Log::info('🙍 User ditemukan:', ['id_user' => $capster->id, 'nama_user' => $capster->name]);
 
                 $namaLayananArray = array_map('trim', explode(',', $rowData['nama_layanan']));
                 $layanans = Layanan::whereIn('nama_layanan', $namaLayananArray)->get();
@@ -450,18 +471,34 @@ class ReservasiController extends Controller
                     ]);
                 }
 
+                $isReservasiExists = Reservasi::where('id_user', $capster->id)
+                    ->where('tanggal_reservasi', $rowData['tanggal_reservasi'])
+                    ->where('jam_reservasi', $rowData['jam_reservasi'])
+                    ->exists();
+
+                if ($isReservasiExists) {
+                    DB::rollBack();
+                    return back()->withErrors([
+                        "Baris ke-" . ($index + 2) =>
+                        'Capster sudah memiliki reservasi pada tanggal dan jam tersebut.'
+                    ]);
+                }
+
                 $totalHarga = $layanans->sum('harga_layanan');
 
+                // 🧾 Buat reservasi
                 $reservasi = Reservasi::create([
                     'id' => Str::uuid(),
-                    'nama_pelanggan' => $rowData['nama_pelanggan'],
-                    'nomor_telepon_pelanggan' => $rowData['nomor_telepon_pelanggan'],
+                    'id_user' => $capster->id,
+                    'id_pelanggan' => $pelanggan->id,
                     'tanggal_reservasi' => $rowData['tanggal_reservasi'],
                     'jam_reservasi' => $rowData['jam_reservasi'],
                     'status_reservasi' => $rowData['status_reservasi'],
                     'total_harga' => $totalHarga,
                     'created_at' => now(),
                 ]);
+
+                Log::info('✅ Reservasi dibuat:', $reservasi->toArray());
 
                 foreach ($layanans as $layanan) {
                     DetailReservasi::create([
@@ -474,12 +511,12 @@ class ReservasiController extends Controller
             }
 
             DB::commit();
-            Log::info('Import CSV reservasi (search by name) berhasil disimpan.');
+            Log::info('📦 Import CSV reservasi berhasil disimpan.');
 
             return redirect()->route('reservasi.index')->with('success', 'Import CSV reservasi berhasil.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Gagal import CSV reservasi (search by name): ' . $e->getMessage(), [
+            Log::error('❌ Gagal import CSV reservasi: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
             ]);
 

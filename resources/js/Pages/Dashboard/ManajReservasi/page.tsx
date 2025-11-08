@@ -33,6 +33,7 @@ export type Reservasi = {
   jam_reservasi: string;
   id_user: string;
   created_at: string;
+  id_pelanggan: string;
 };
 
 interface Layanan {
@@ -85,7 +86,6 @@ export default function IndexPage({ reservasis, layanans, pelanggans }: Props) {
   };
 
   const columns: ColumnDef<Reservasi>[] = [
-    // { accessorKey: "id", header: "ID" },
     { accessorKey: "id_pelanggan", header: "Nama Pelanggan" },
     { accessorKey: "status_reservasi", header: "Status Reservasi" },
     {

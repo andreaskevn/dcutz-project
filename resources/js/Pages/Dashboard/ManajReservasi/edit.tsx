@@ -30,6 +30,10 @@ interface Reservasi {
     jam_reservasi: string;
     status_reservasi: string;
     id_user: string;
+    pelanggan: {
+        nama_pelanggan: string;
+        nomor_telepon_pelanggan: string;
+    };
 }
 
 interface Props {
@@ -67,11 +71,13 @@ export default function EditReservasi({
         jam_reservasi: reservasi.jam_reservasi || "",
         id_layanan: initialSelectedIds || [],
         id_user: reservasi.id_user || "",
-        nama_pelanggan: "",
-        nomor_telepon_pelanggan: "",
+        nama_pelanggan: reservasi.pelanggan.nama_pelanggan || "",
+        nomor_telepon_pelanggan: reservasi.pelanggan.nomor_telepon_pelanggan || "",
     });
     const [selectedLayananIds, setSelectedLayananIds] = useState<string[]>(initialSelectedIds);
     const [isAddingNewCustomer, setIsAddingNewCustomer] = useState(false);
+
+    console.log("reservasi", reservasi);
 
 
     useEffect(() => {
