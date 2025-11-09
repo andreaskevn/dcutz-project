@@ -55,7 +55,5 @@ class UserSeeder extends Seeder
                 'updated_at' => now(),
             ]);
         }
-
-        $this->command->info('✅ UserSeeder berhasil menambahkan Owner dan Capster.');
     }
 }

@@ -25,7 +25,7 @@ class PresensiController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Presensi::with(['user', 'detailPresensis.shift']);
+        $query = Presensi::with(['user', 'detailPresensis.shift', 'detailPresensis.user']);
 
         if ($request->filled('start_date') && $request->filled('end_date')) {
             $query->whereBetween('created_at', [
@@ -39,15 +39,45 @@ class PresensiController extends Controller
         }
 
         $presensis = $query->get()->map(function ($p) {
+            $firstDetail = $p->detailPresensis->first();
+            $shift = $firstDetail?->user?->shift;
+            $now = now();
+            $canEdit = false;
+
+            if ($shift) {
+                $shiftName = strtolower($shift->shift_name);
+
+                if ($shiftName === 'shift 1') {
+                    $startEdit = now()->setTime(10, 0);
+                    $endEdit = now()->setTime(10, 15);
+                } elseif ($shiftName === 'shift 2') {
+                    $startEdit = now()->setTime(14, 0);
+                    $endEdit = now()->setTime(14, 15);
+                } else {
+                    $startEdit = null;
+                    $endEdit = null;
+                }
+
+                if ($startEdit && $endEdit && $now->between($startEdit, $endEdit)) {
+                    $canEdit = true;
+                }
+            }
+
             return [
                 'id' => $p->id,
                 'waktu_presensi' => $p->waktu_presensi,
                 'created_by' => $p->user->name ? $p->user->name : '-',
                 'created_at' => $p->created_at->format('Y-m-d H:i:s'),
+                'shift_name' => $shift->shift_name,
+                'can_edit' => $canEdit,
             ];
         });
 
-        $users = User::select('id', 'name')->get();
+        $users = User::select('id', 'name')
+            ->whereHas('role', function ($query) {
+                $query->where('role_name', 'Owner');
+            })
+            ->get();
 
         return Inertia::render('Dashboard/ManajPresensi/page', [
             'presensis' => $presensis->toArray(),

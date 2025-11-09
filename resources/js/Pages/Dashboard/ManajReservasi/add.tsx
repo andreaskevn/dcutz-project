@@ -53,7 +53,7 @@ interface Pelanggan {
 
 export default function CreateReservasi({ reservasis, layanans, statuses, capster, pelanggans }: Props) {
     const { data, setData, post, processing, errors } = useForm({
-        id_pelanggan: "",
+        id_pelanggan: null as string | null,
         status_reservasi: "Diproses",
         tanggal_reservasi: "",
         jam_reservasi: "",
@@ -115,7 +115,7 @@ export default function CreateReservasi({ reservasis, layanans, statuses, capste
                 });
 
                 setData({
-                    id_pelanggan: "",
+                    id_pelanggan: null,
                     status_reservasi: "Diproses",
                     tanggal_reservasi: "",
                     jam_reservasi: "",
@@ -163,8 +163,8 @@ export default function CreateReservasi({ reservasis, layanans, statuses, capste
                                 {!isAddingNewCustomer ? (
                                     <>
                                         <Select
+                                            value={data.id_pelanggan ?? ""}
                                             onValueChange={(value) => setData("id_pelanggan", value)}
-                                            defaultValue={data.id_pelanggan}
                                         >
                                             <SelectTrigger className="w-full">
                                                 <SelectValue placeholder="Pilih pelanggan" />
@@ -184,7 +184,7 @@ export default function CreateReservasi({ reservasis, layanans, statuses, capste
                                             className="mt-2"
                                             onClick={() => {
                                                 setIsAddingNewCustomer(true);
-                                                setData("id_pelanggan", "");
+                                                setData("id_pelanggan", null);
                                                 setData("nama_pelanggan", "");
                                                 setData("nomor_telepon_pelanggan", "");
                                             }}

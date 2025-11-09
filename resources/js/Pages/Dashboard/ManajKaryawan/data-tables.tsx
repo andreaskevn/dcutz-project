@@ -56,9 +56,9 @@ export function DataTable<TData, TValue>({
         },
     });
 
-    console.log("data ", data);
-    console.log("roles ", roles);
-    console.log("shifts ", shifts);
+        // console.log("data ", data);
+        // console.log("roles ", roles);
+        // console.log("shifts ", shifts);
 
     return (
         <div>

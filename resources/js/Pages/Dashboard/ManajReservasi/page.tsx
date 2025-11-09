@@ -6,6 +6,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
 import { router } from "@inertiajs/react";
+import { Badge } from "@/Components/ui/badge";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -20,7 +21,7 @@ import {
 import { convertDate } from "@/lib/convertDate";
 import { Dialog, DialogTrigger } from "@/Components/ui/dialog";
 import ImportPresensiModal from "./import-csv";
-import { Plus, Upload } from "lucide-react";
+import { BadgeCheckIcon, BadgeIcon, Plus, Upload } from "lucide-react";
 import { useEffect } from "react";
 import { usePage } from "@inertiajs/react";
 import { toast } from "sonner";
@@ -87,7 +88,23 @@ export default function IndexPage({ reservasis, layanans, pelanggans }: Props) {
 
   const columns: ColumnDef<Reservasi>[] = [
     { accessorKey: "id_pelanggan", header: "Nama Pelanggan" },
-    { accessorKey: "status_reservasi", header: "Status Reservasi" },
+    {
+      accessorKey: "status_reservasi", header: "Status Reservasi",
+      cell: ({ row }) => {
+        const status = row.original.status_reservasi;
+        if (status === "Selesai") {
+          return (
+            <Badge variant="secondary" className="flex items-center gap-1">
+              <BadgeCheckIcon className="h-4" />
+              <span className="text-sm">{status}</span>
+            </Badge>
+          );
+        }
+        else if (status === "Diproses") {
+          return <Badge variant="outline">{status}</Badge>;
+        }
+      }
+    },
     {
       accessorKey: "layanans",
       header: "Layanan",

@@ -75,8 +75,8 @@ class ReservasiController extends Controller
     {
         $validated = $request->validate([
             'id_pelanggan'            => 'nullable|string|exists:pelanggans,id',
-            'nama_pelanggan'          => 'required_without:id_pelanggan|string|max:255',
-            'nomor_telepon_pelanggan' => 'required_without:id_pelanggan|string|max:20',
+            'nama_pelanggan'          => 'required_without:id_pelanggan|max:255',
+            'nomor_telepon_pelanggan' => 'required_without:id_pelanggan|max:20',
             'tanggal_reservasi'       => 'required|date',
             'jam_reservasi'           => 'required|date_format:H:i:s',
             'id_layanan'              => 'required|array',
@@ -85,7 +85,7 @@ class ReservasiController extends Controller
             'id_user'                 => 'required|exists:users,id',
         ]);
 
-        Log::info('🧾 Validated data:', $validated);
+        Log::info('Validated data:', $validated);
 
         if (!empty($validated['id_pelanggan'])) {
             $pelanggan = Pelanggan::find($validated['id_pelanggan']);
@@ -136,7 +136,7 @@ class ReservasiController extends Controller
             ];
 
             $reservasi = Reservasi::create($reservasiData);
-            Log::info('✅ Reservasi berhasil dibuat:', $reservasi->toArray());
+            Log::info('Reservasi berhasil dibuat:', $reservasi->toArray());
 
             foreach ($validated['id_layanan'] as $idLayanan) {
                 $layanan = Layanan::find($idLayanan);

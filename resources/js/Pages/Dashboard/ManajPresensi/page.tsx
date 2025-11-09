@@ -30,11 +30,22 @@ export type Presensi = {
   waktu_presensi: string;
   id_user: string;
   created_at: string;
+  shift_name: string;
+  can_edit: boolean;
 };
+
+interface Users {
+  id: string;
+  name: string;
+  shift: {
+    id: string;
+    shift_name: string;
+  }
+}
 
 interface Props {
   presensis: Presensi[];
-  users: { id: string; name: string }[];
+  users: Users[];
   filters: {
     start_date?: string;
     end_date?: string;
@@ -50,6 +61,8 @@ export default function IndexPage({ presensis, users, filters, auth }: Props) {
   const flash = props.flash as { success?: string; error?: string };
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const userRole = auth?.role;
+  // console.log("users", users)
+  // console.log("presensis", presensis)
 
   useEffect(() => {
     if (flash?.success) {
@@ -63,6 +76,7 @@ export default function IndexPage({ presensis, users, filters, auth }: Props) {
 
   const columns: ColumnDef<Presensi>[] = [
     { accessorKey: "waktu_presensi", header: "Waktu Presensi" },
+    { accessorKey: "shift_name", header: "Shift" },
     { accessorKey: "created_by", header: "Created By" },
     {
       accessorKey: "created_at", header: "Created At",
@@ -73,16 +87,30 @@ export default function IndexPage({ presensis, users, filters, auth }: Props) {
     },
     {
       header: "Action",
-      cell: ({ row }) => {
+        cell: ({ row }) => {
         const presensiItem = row.original;
+
+        if (userRole !== "Owner" && userRole !== "Manajer Lapangan") {
+          return null;
+        }
+
+        const canEdit = presensiItem.can_edit;
+        console.log("canEdit", presensiItem)
+
         return (
           <div className="flex space-x-2">
             <Button
               variant="outline"
-              onClick={() => router.visit(route("presensi.edit", { id: presensiItem.id }))}
+              disabled={!canEdit}
+              onClick={() => {
+                if (!canEdit) {
+                  router.visit(route("presensi.edit", { id: presensiItem.id }));
+                }
+              }}
             >
               Edit
             </Button>
+
             <Button
               variant="secondary"
               onClick={() =>
@@ -94,7 +122,7 @@ export default function IndexPage({ presensis, users, filters, auth }: Props) {
           </div>
         );
       },
-    },
+    }
   ];
 
   return (

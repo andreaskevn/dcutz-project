@@ -46,7 +46,7 @@ export default function IndexPage({ users, roles, shifts, auth }: Props) {
   const flash = props.flash as { success?: string; error?: string };
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const userRole = auth?.role;
-  console.log("User Role:", userRole);
+  // console.log("User Role:", userRole);
 
   useEffect(() => {
     if (flash?.success) {

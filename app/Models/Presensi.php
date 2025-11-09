@@ -37,6 +37,4 @@ class Presensi extends Model
     {
         return $this->belongsTo(Shift::class, 'id_shift');
     }
-
-
 }
