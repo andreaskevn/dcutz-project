@@ -10,13 +10,4 @@ export default defineConfig({
         }),
         react(),
     ],
-    // server: {
-    //     host: true, // listen semua host
-    //     port: 5173,
-    //     https: true, // pakai HTTPS agar browser tidak blokir
-    //     hmr: {
-    //         protocol: "wss", // secure WebSocket
-    //         host: undefined, // autodetect domain dari request browser (ngrok)
-    //     },
-    // },
 });

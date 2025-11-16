@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
-
+use Carbon\Carbon;
 
 
 class ReservasiController extends Controller
@@ -78,7 +78,7 @@ class ReservasiController extends Controller
             'nama_pelanggan'          => 'required_without:id_pelanggan|max:255',
             'nomor_telepon_pelanggan' => 'required_without:id_pelanggan|max:20',
             'tanggal_reservasi'       => 'required|date',
-            'jam_reservasi'           => 'required|date_format:H:i:s',
+            'jam_reservasi'           => 'required|date_format:H:i',
             'id_layanan'              => 'required|array',
             'id_layanan.*'            => 'required|string|exists:layanans,id',
             'status_reservasi'        => 'required|in:Diproses,Selesai',
@@ -103,7 +103,10 @@ class ReservasiController extends Controller
 
         $isReservasiExists = Reservasi::where('id_user', $validated['id_user'])
             ->where('tanggal_reservasi', $validated['tanggal_reservasi'])
-            ->where('jam_reservasi', $validated['jam_reservasi'])
+            ->where(function ($q) use ($validated) {
+                $q->where('jam_reservasi', $validated['jam_reservasi'])
+                    ->orWhere('jam_reservasi', $validated['jam_reservasi'] . ':00');
+            })
             ->exists();
 
         if ($isReservasiExists) {
@@ -111,6 +114,28 @@ class ReservasiController extends Controller
                 ->withInput()
                 ->withErrors(['tanggal_reservasi' => 'Capster sudah memiliki reservasi pada tanggal dan jam tersebut.']);
         }
+
+        $jamBaru = Carbon::parse($validated['jam_reservasi']);
+
+        $todayReservation = Reservasi::where('id_user', $validated['id_user'])
+            ->where('tanggal_reservasi', $validated['tanggal_reservasi'])
+            ->get();
+        Log::info('Reservasi pada tanggal dan jam tersebut:', $todayReservation->toArray());
+
+        foreach ($todayReservation as $r) {
+            $jamLama = Carbon::parse($r->jam_reservasi);
+            $selisihMenit = abs($jamBaru->diffInMinutes($jamLama));
+            Log::info('each Reservation:', ['selisih_menit' => $r]);
+
+            if ($selisihMenit < 50) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors([
+                        'jam_reservasi' => "Capster sudah memiliki reservasi lain pada {$r->jam_reservasi}. Harus ada jeda minimal 50 menit."
+                    ]);
+            }
+        }
+
 
         DB::beginTransaction();
 
@@ -242,7 +267,7 @@ class ReservasiController extends Controller
             'nama_pelanggan'          => 'required_without:id_pelanggan|string|max:255',
             'nomor_telepon_pelanggan' => 'required_without:id_pelanggan|string|max:20',
             'tanggal_reservasi'       => 'required|date',
-            'jam_reservasi'           => 'required|date_format:H:i:s',
+            'jam_reservasi'           => 'required|date_format:H:i',
             'id_layanan'              => 'required|array|min:1',
             'id_layanan.*'            => 'required|string|exists:layanans,id',
             'status_reservasi'        => 'required|in:Diproses,Selesai',
@@ -267,7 +292,10 @@ class ReservasiController extends Controller
 
         $isReservasiExists = Reservasi::where('id_user', $validated['id_user'])
             ->where('tanggal_reservasi', $validated['tanggal_reservasi'])
-            ->where('jam_reservasi', $validated['jam_reservasi'])
+            ->where(function ($q) use ($validated) {
+                $q->where('jam_reservasi', $validated['jam_reservasi'])
+                    ->orWhere('jam_reservasi', $validated['jam_reservasi'] . ':00');
+            })
             ->where('id', '!=', $id)
             ->exists();
 
@@ -275,6 +303,24 @@ class ReservasiController extends Controller
             return redirect()->back()
                 ->withInput()
                 ->withErrors(['tanggal_reservasi' => 'Capster sudah memiliki reservasi pada tanggal dan jam tersebut.']);
+        }
+
+        $jamBaru = Carbon::parse($validated['jam_reservasi']);
+        $todayReservation = Reservasi::where('id_user', $validated['id_user'])
+            ->where('tanggal_reservasi', $validated['tanggal_reservasi'])
+            ->get();
+
+        foreach ($todayReservation as $r) {
+            $jamLama = Carbon::parse($r->jam_reservasi);
+            $selisihMenit = abs($jamBaru->diffInMinutes($jamLama));
+
+            if ($selisihMenit < 50) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors([
+                        'jam_reservasi' => "Capster sudah memiliki reservasi lain pada {$r->jam_reservasi}. Harus ada jeda minimal 50 menit."
+                    ]);
+            }
         }
 
         DB::beginTransaction();

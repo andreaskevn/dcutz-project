@@ -22,7 +22,7 @@ import { usePage } from "@inertiajs/react";
 import { toast } from "sonner";
 import { Dialog, DialogTrigger } from "@/Components/ui/dialog";
 import ImportUserModal from "./import-csv";
-import { Upload } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 
 export type Karyawan = {
   name: string
@@ -108,13 +108,13 @@ export default function IndexPage({ users, roles, shifts, auth }: Props) {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Batal</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => handleDelete(karyawanItem.id)}>
+                    <AlertDialogAction onClick={() => handleDelete(karyawanItem.id)} className="bg-gradient-to-r from-[#00D79E] to-[#0BD0D4] text-black">
                       Hapus
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
-              )}
+            )}
           </div>
         );
       },
@@ -152,10 +152,11 @@ export default function IndexPage({ users, roles, shifts, auth }: Props) {
               </Dialog>
 
               <Button
-                className="px-4 py-2 rounded-md"
+                className="px-4 py-2 rounded-md bg-gradient-to-r from-[#00D79E] to-[#0BD0D4] text-black"
                 onClick={() => (window.location.href = route("users.create"))}
               >
-                Tambah Karyawan
+                <Plus className="h-4 w-4 mr-2" />
+                Tambah User
               </Button>
             </div>
           )}

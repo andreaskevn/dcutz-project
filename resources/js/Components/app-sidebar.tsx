@@ -10,6 +10,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/Components/ui/sidebar"
+import ResponsiveNavLink from "./ResponsiveNavLink"
+import { Button } from "./ui/button";
 
 // Menu items.
 const items = [
@@ -38,19 +40,19 @@ const items = [
     url: "/pelanggan",
     icon: UserCogIcon,
   },
-  {
-    title: "Profil User",
-    url: "/profile",
-    icon: User,
-  },
+  // {
+  //   title: "Profil User",
+  //   url: "/profile",
+  //   icon: User,
+  // },
 ]
 
 export function AppSidebar() {
   return (
     <Sidebar variant="floating">
-      <SidebarContent>
+      <SidebarContent className="flex flex-col h-full">
         <SidebarGroup>
-          <SidebarGroupLabel>Dcutz Berber Management App</SidebarGroupLabel>
+          <SidebarGroupLabel>Dcutz Barber Management App</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
@@ -66,7 +68,29 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        <div className="mt-auto">
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuItem>
+                  <ResponsiveNavLink
+                    method="post"
+                    href={route("logout")}
+                    as="button"
+                    className="w-full p-4 py-2 text-white bg-black rounded-md flex items-center gap-2 hover:bg-red-800"
+                  >
+                    <User2 className="h-4 w-4" />
+                    <span>Log Out</span>
+                  </ResponsiveNavLink>
+                </SidebarMenuItem>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </div>
+
       </SidebarContent>
     </Sidebar>
-  )
+  );
 }
+

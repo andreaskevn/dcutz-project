@@ -20,7 +20,7 @@ import {
 import { convertDate } from "@/lib/convertDate";
 import { Dialog, DialogTrigger } from "@/Components/ui/dialog";
 import ImportPresensiModal from "./import-csv";
-import { Plus, Upload } from "lucide-react";
+import { Download, Plus, Upload } from "lucide-react";
 import { useEffect } from "react";
 import { usePage } from "@inertiajs/react";
 import { toast } from "sonner";
@@ -87,7 +87,7 @@ export default function IndexPage({ presensis, users, filters, auth }: Props) {
     },
     {
       header: "Action",
-        cell: ({ row }) => {
+      cell: ({ row }) => {
         const presensiItem = row.original;
 
         if (userRole !== "Owner" && userRole !== "Manajer Lapangan") {
@@ -154,12 +154,13 @@ export default function IndexPage({ presensis, users, filters, auth }: Props) {
                   window.open(route("presensi.export") + "?" + params, "_blank");
                 }}
               >
+                <Download className="h-4 w-4 mr-2" />
                 Export Excel
               </Button>
             )}
             <Link href={route("presensi.create")}>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
+              <Button className="bg-gradient-to-r from-[#00D79E] to-[#0BD0D4] text-black">
+                <Plus className="h-4 w-4 mr-2 " />
                 Tambah Presensi
               </Button>
             </Link>
@@ -173,6 +174,6 @@ export default function IndexPage({ presensis, users, filters, auth }: Props) {
 
         </div>
       </div>
-    </Layout>
+    </Layout >
   );
 }

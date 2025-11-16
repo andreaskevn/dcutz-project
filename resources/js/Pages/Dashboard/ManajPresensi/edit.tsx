@@ -201,7 +201,7 @@ export default function EditPresensi({ presensi, detailPresensis, shifts }: Prop
                                 >
                                     Batal
                                 </Button>
-                                <Button type="submit" disabled={processing}>
+                                <Button type="submit" disabled={processing} className="bg-gradient-to-r from-[#00D79E] to-[#0BD0D4] ">
                                     Simpan Perubahan
                                 </Button>
                             </div>

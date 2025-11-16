@@ -80,7 +80,7 @@ export default function ImportUserModal({ open, onOpenChange }: ImportReservasiM
 
                     <div className="text-sm">
                         <a
-                            href="/template/template presensi.csv"
+                            href="/template/template user.csv"
                             download
                             className="inline-flex items-center hover:underline"
                         >
@@ -98,7 +98,7 @@ export default function ImportUserModal({ open, onOpenChange }: ImportReservasiM
                         >
                             Batal
                         </Button>
-                        <Button type="submit" disabled={processing}>
+                        <Button type="submit" disabled={processing} className="bg-gradient-to-r from-[#00D79E] to-[#0BD0D4] text-black">
                             {processing ? "Mengunggah..." : "Import"}
                         </Button>
                     </DialogFooter>

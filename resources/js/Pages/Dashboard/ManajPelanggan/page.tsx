@@ -22,7 +22,7 @@ import { usePage } from "@inertiajs/react";
 import { toast } from "sonner";
 import { Dialog, DialogTrigger } from "@/Components/ui/dialog";
 import ImportUserModal from "./import-csv";
-import { Upload } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 
 export type Pelanggan = {
   id: string;
@@ -70,7 +70,7 @@ export default function IndexPage({ pelanggans }: Props) {
 
 
   const columns: ColumnDef<Pelanggan>[] = [
-    { accessorKey: "id", header: "ID" },
+    // { accessorKey: "id", header: "ID" },
     { accessorKey: "nama_pelanggan", header: "Nama Pelanggan" },
     { accessorKey: "nomor_telepon_pelanggan", header: "Nomor Telepon" },
     {
@@ -98,7 +98,7 @@ export default function IndexPage({ pelanggans }: Props) {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Batal</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => handleDelete(pelangganItem.id)}>
+                  <AlertDialogAction onClick={() => handleDelete(pelangganItem.id)} className="bg-gradient-to-r from-[#00D79E] to-[#0BD0D4] text-black">
                     Hapus
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -140,9 +140,10 @@ export default function IndexPage({ pelanggans }: Props) {
             </Dialog>
 
             <Button
-              className="px-4 py-2 rounded-md"
+              className="px-4 py-2 rounded-md bg-gradient-to-r from-[#00D79E] to-[#0BD0D4] text-black"
               onClick={() => (window.location.href = route("pelanggan.create"))}
             >
+              <Plus className="h-4 w-4 mr-2" />
               Tambah Pelanggan
             </Button>
           </div>

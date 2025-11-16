@@ -162,7 +162,7 @@ export default function IndexPage({ reservasis, layanans, pelanggans }: Props) {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Batal</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => handleDelete(presensiItem.id)}>
+                  <AlertDialogAction onClick={() => handleDelete(presensiItem.id)} className="bg-gradient-to-r from-[#00D79E] to-[#0BD0D4]">
                     Hapus
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -206,7 +206,7 @@ export default function IndexPage({ reservasis, layanans, pelanggans }: Props) {
             </Dialog>
 
             <Link href={route("reservasi.create")}>
-              <Button>
+              <Button className="bg-gradient-to-r from-[#00D79E] to-[#0BD0D4] text-black">
                 <Plus className="h-4 w-4 mr-2" />
                 Tambah Reservasi
               </Button>

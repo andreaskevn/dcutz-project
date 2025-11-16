@@ -100,7 +100,7 @@ export default function Login({
                         </Link>
                     )}
 
-                    <PrimaryButton className="ms-4" disabled={processing}>
+                    <PrimaryButton className="ms-4 bg-gradient-to-r from-[#00D79E] to-[#0BD0D4]" disabled={processing}>
                         Log in
                     </PrimaryButton>
                 </div>

@@ -178,7 +178,7 @@ export default function CreatePresensi({ presensis, shifts }: Props) {
                                 >
                                     Batal
                                 </Button>
-                                <Button type="submit" disabled={processing}>
+                                <Button type="submit" disabled={processing} className="bg-gradient-to-r from-[#00D79E] to-[#0BD0D4] text-black">
                                     Simpan
                                 </Button>
                             </div>

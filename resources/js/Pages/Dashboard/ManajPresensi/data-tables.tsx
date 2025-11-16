@@ -81,8 +81,6 @@ export function DataTable<TData, TValue>({
         router.get(route("presensi.index"), {}, { preserveScroll: true });
     };
 
-    // console.log("data ", data);
-
     return (
         <div>
             <div className="flex flex-wrap items-end gap-3 py-2">
@@ -121,7 +119,7 @@ export function DataTable<TData, TValue>({
 
                 </div>
 
-                <Button onClick={handleFilter}>Filter</Button>
+                <Button onClick={handleFilter} className="bg-gradient-to-r from-[#00D79E] to-[#0BD0D4]">Filter</Button>
                 <Button onClick={resetFilter} variant="outline">
                     Reset
                 </Button>

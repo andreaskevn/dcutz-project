@@ -11,7 +11,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { ClockCheck } from "lucide-react";
 import React, { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-
+import dayjs from "dayjs";
 
 interface Layanan {
     id: string;
@@ -234,9 +234,9 @@ export default function EditReservasi({
                                 <div className="space-y-2">
                                     <Label htmlFor="tanggal_reservasi" className="block">Tanggal Reservasi</Label>
                                     <DatePicker
-                                        value={data.tanggal_reservasi ? new Date(data.tanggal_reservasi) : null}
+                                        value={data.tanggal_reservasi ? dayjs(data.tanggal_reservasi).toDate() : null}
                                         onChange={(date) => {
-                                            const formattedDate = date ? date.toISOString().split("T")[0] : "";
+                                            const formattedDate = date ? dayjs(date).format("YYYY-MM-DD") : "";
                                             setData("tanggal_reservasi", formattedDate);
                                         }}
                                     />
@@ -248,7 +248,7 @@ export default function EditReservasi({
                                     <Input
                                         type="time"
                                         id="jam_reservasi"
-                                        step="1"
+                                        step="60"
                                         value={data.jam_reservasi}
                                         onChange={(e) => setData("jam_reservasi", e.target.value)}
                                     />

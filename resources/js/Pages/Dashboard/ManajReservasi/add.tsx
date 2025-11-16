@@ -12,8 +12,7 @@ import { DataTable } from "./data-table-layanans";
 import { ColumnDef } from "@tanstack/react-table";
 import { ClockCheck } from "lucide-react";
 import { toast } from "sonner";
-
-
+import dayjs from "dayjs";
 
 interface Reservasi {
     id_layanan: string;
@@ -234,9 +233,9 @@ export default function CreateReservasi({ reservasis, layanans, statuses, capste
                                 <div className="space-y-2">
                                     <Label htmlFor="tanggal_reservasi" className="block">Tanggal Reservasi</Label>
                                     <DatePicker
-                                        value={data.tanggal_reservasi ? new Date(data.tanggal_reservasi) : null}
+                                        value={data.tanggal_reservasi ? dayjs(data.tanggal_reservasi).toDate() : null}
                                         onChange={(date) => {
-                                            const formattedDate = date ? date.toISOString().split("T")[0] : "";
+                                            const formattedDate = date ? dayjs(date).format("YYYY-MM-DD") : "";
                                             setData("tanggal_reservasi", formattedDate);
                                         }}
                                     />
@@ -249,8 +248,7 @@ export default function CreateReservasi({ reservasis, layanans, statuses, capste
                                     <Input
                                         type="time"
                                         id="jam_reservasi"
-                                        step="1"
-                                        // defaultValue="10:30:00"
+                                        step="60"
                                         value={data.jam_reservasi}
                                         onChange={(e) => setData("jam_reservasi", (e.target.value))}
                                         className="w-full bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
@@ -293,11 +291,6 @@ export default function CreateReservasi({ reservasis, layanans, statuses, capste
                                 />
                                 {errors.id_layanan && <p className="text-sm">{errors.id_layanan}</p>}
                             </div>
-                            {/* //agis
-                            //heru
-                            //akbar
-                            //rohman
-                            //jack */}
 
                             <div className="space-y-2">
                                 <Label htmlFor="status_reservasi">Status Reservasi</Label>
@@ -338,7 +331,7 @@ export default function CreateReservasi({ reservasis, layanans, statuses, capste
                                 >
                                     Batal
                                 </Button>
-                                <Button type="submit" disabled={processing}>
+                                <Button type="submit" disabled={processing} className="bg-gradient-to-r from-[#00D79E] to-[#0BD0D4] text-black">
                                     Simpan
                                 </Button>
                             </div>
