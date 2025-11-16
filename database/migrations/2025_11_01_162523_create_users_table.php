@@ -21,6 +21,7 @@ return new class extends Migration
             $table->uuid('id_shift')->required()->nullable();
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes();
 
             $table->foreign('id_role')->references('id')->on('roles');
             $table->foreign('id_shift')->references('id')->on('shifts');

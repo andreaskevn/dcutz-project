@@ -11,7 +11,7 @@ import {
   SidebarMenuItem,
 } from "@/Components/ui/sidebar"
 import ResponsiveNavLink from "./ResponsiveNavLink"
-import { Button } from "./ui/button";
+import { usePage } from '@inertiajs/react';
 
 // Menu items.
 const items = [
@@ -40,14 +40,11 @@ const items = [
     url: "/pelanggan",
     icon: UserCogIcon,
   },
-  // {
-  //   title: "Profil User",
-  //   url: "/profile",
-  //   icon: User,
-  // },
 ]
 
 export function AppSidebar() {
+  const { url } = usePage();
+
   return (
     <Sidebar variant="floating">
       <SidebarContent className="flex flex-col h-full">
@@ -55,16 +52,30 @@ export function AppSidebar() {
           <SidebarGroupLabel>Dcutz Barber Management App</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild tooltip={`${item.title}`}>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {items.map((item) => {
+                const isActive = url.startsWith(item.url);
+
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      tooltip={item.title}
+                      className={
+                        isActive
+                          ? "bg-black text-white hover:bg-primary/90"
+                          : "hover:bg-muted"
+                      }
+                    >
+                      <a href={item.url} className="flex items-center gap-2">
+                        <item.icon
+                          className={isActive ? "text-white" : "text-muted-foreground"}
+                        />
+                        <span>{item.title}</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
