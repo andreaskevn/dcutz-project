@@ -27,10 +27,12 @@ class DashboardController extends Controller
             ->orderByDesc('total')
             ->first();
 
-        $status = DetailPresensi::where('id_user', $topEmployee->id_user)
-            ->whereMonth('created_at', $month)
-            ->orderBy('created_at', 'desc')
-            ->value('status_presensi');
+        if ($topEmployee) {
+            $status = DetailPresensi::where('id_user', $topEmployee->id_user)
+                ->whereMonth('created_at', $month)
+                ->orderBy('created_at', 'desc')
+                ->value('status_presensi');
+        }
 
         $topEmployeeData = $topEmployee ? [
             'name' => $topEmployee->user->name,
