@@ -37,4 +37,8 @@ class Reservasi extends Model
 
     protected $keyType = 'string';
     public $incrementing = false;
+    protected $casts = [
+        'tanggal_reservasi' => 'string',
+        'jam_reservasi' => 'string',
+    ];
 }

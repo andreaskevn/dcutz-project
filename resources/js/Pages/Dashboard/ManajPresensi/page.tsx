@@ -90,7 +90,7 @@ export default function IndexPage({ presensis, users, filters, auth }: Props) {
       cell: ({ row }) => {
         const presensiItem = row.original;
 
-        if (userRole !== "Owner" && userRole !== "Manajer Lapangan") {
+        if (userRole === "Capster") {
           return null;
         }
 
@@ -103,7 +103,7 @@ export default function IndexPage({ presensis, users, filters, auth }: Props) {
               variant="outline"
               disabled={!canEdit}
               onClick={() => {
-                if (!canEdit) {
+                if (canEdit) {
                   router.visit(route("presensi.edit", { id: presensiItem.id }));
                 }
               }}

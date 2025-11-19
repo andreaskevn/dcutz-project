@@ -80,7 +80,7 @@ export default function ImportReservasiModal({ open, onOpenChange }: ImportReser
 
                     <div className="text-sm">
                         <a
-                            href="/template/template presensi.csv"
+                            href="/template/template reservasi.csv"
                             download
                             className="inline-flex items-center hover:underline"
                         >

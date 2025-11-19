@@ -56,18 +56,14 @@ export function DataTable<TData, TValue>({
         },
     });
 
-    console.log("data ", data);
-    console.log("roles ", roles);
-    console.log("shifts ", shifts);
-
     return (
         <div>
             <div className="flex flex-wrap items-center gap-4 py-4">
                 <Input
                     placeholder="Filter names..."
-                    value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+                    value={(table.getColumn("nama_pelanggan")?.getFilterValue() as string) ?? ""}
                     onChange={(event) =>
-                        table.getColumn("name")?.setFilterValue(event.target.value)
+                        table.getColumn("nama_pelanggan")?.setFilterValue(event.target.value)
                     }
                     className="max-w-sm"
                 />

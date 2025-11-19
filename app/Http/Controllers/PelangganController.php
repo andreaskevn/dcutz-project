@@ -68,13 +68,14 @@ class PelangganController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Pelanggan $pelanggan)
+    public function update(Request $request, $id)
     {
         $validated = $request->validate([
             'nama_pelanggan' => 'required|string|max:255',
             'nomor_telepon_pelanggan' => 'required|string|max:20',
         ]);
 
+        $pelanggan = Pelanggan::findOrFail($id);
         $pelanggan->update($validated);
 
         return redirect()->route('pelanggan.index')->with('success', 'Pelanggan berhasil diperbarui.');
@@ -83,8 +84,9 @@ class PelangganController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Pelanggan $pelanggan)
+    public function destroy($id)
     {
+        $pelanggan = Pelanggan::findOrFail($id);
         $pelanggan->delete();
 
         return redirect()->route('pelanggan.index')->with('success', 'Pelanggan berhasil dihapus.');
@@ -102,11 +104,9 @@ class PelangganController extends Controller
 
         $path = $request->file('file')->getRealPath();
 
-        // Deteksi delimiter otomatis (; atau ,)
         $firstLine = fgets(fopen($path, 'r'));
         $delimiter = str_contains($firstLine, ';') ? ';' : ',';
 
-        // Parse CSV
         $rows = array_map(fn($line) => str_getcsv($line, $delimiter), file($path));
 
         $header = array_map('trim', array_shift($rows)); // Ambil header CSV
@@ -128,17 +128,14 @@ class PelangganController extends Controller
             $nama  = trim($data['nama_pelanggan'] ?? '');
             $telp  = trim($data['nomor_telepon_pelanggan'] ?? '');
 
-            // Skip jika nama kosong
             if (empty($nama)) {
                 $skipped++;
                 continue;
             }
 
-            // Cek apakah pelanggan sudah ada berdasarkan nomor telepon
             $existing = Pelanggan::where('nomor_telepon_pelanggan', $telp)->first();
 
             if ($existing) {
-                // Update jika sudah ada
                 $existing->update([
                     'nama_pelanggan' => $nama,
                 ]);
@@ -147,7 +144,6 @@ class PelangganController extends Controller
                 continue;
             }
 
-            // Buat baru
             Pelanggan::create([
                 'id'                        => Str::uuid(),
                 'nama_pelanggan'            => $nama,

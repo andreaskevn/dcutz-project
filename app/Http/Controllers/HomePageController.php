@@ -62,8 +62,8 @@ class HomePageController extends Controller
         }
 
         $existingReservasi = Reservasi::where('id_user', $validated['id_user'])
-            ->where('tanggal_reservasi', $validated['tanggal_reservasi'])
-            ->where('jam_reservasi', $validated['jam_reservasi'])
+            ->whereDate('tanggal_reservasi', $validated['tanggal_reservasi'])
+            ->whereTime('jam_reservasi', $validated['jam_reservasi'])
             ->first();
 
         if ($existingReservasi) {

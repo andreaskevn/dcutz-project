@@ -75,6 +75,7 @@ export default function Home({ layanans, capsters, auth }: HomeProps) {
     });
 
     const handleChange = (key, value) => setData(key, value);
+    console.log("datadate", data.tanggal_reservasi);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -329,21 +330,25 @@ export default function Home({ layanans, capsters, auth }: HomeProps) {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <Label>Tanggal Reservasi</Label>
-                            <DatePicker
-                                value={data.tanggal_reservasi ? new Date(data.tanggal_reservasi) : null}
-                                onChange={(date) => {
-                                    const formattedDate = date ? date.toISOString().split("T")[0] : "";
-                                    setData("tanggal_reservasi", formattedDate);
-                                }}
-                            />
-                            {errors.tanggal_reservasi && (
-                                <p className="text-red-500 text-sm mt-1">
-                                    {errors.tanggal_reservasi}
-                                </p>
-                            )}
-                        </div>
+                        <DatePicker
+                            value={
+                                data.tanggal_reservasi
+                                    ? new Date(`${data.tanggal_reservasi}T12:00:00`)
+                                    : null
+                            }
+                            onChange={(date) => {
+                                if (!date) {
+                                    setData("tanggal_reservasi", "");
+                                    return;
+                                }
+                                date.setHours(12, 0, 0, 0);
+                                console.log("date", date)
+
+                                const formattedDate =
+                                    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+                                setData("tanggal_reservasi", formattedDate);
+                            }}
+                        />
                         <div>
                             <Label>Jam Reservasi</Label>
                             <Input

@@ -469,7 +469,7 @@ class ReservasiController extends Controller
                     'nama_pelanggan' => 'required|string|max:255',
                     'nomor_telepon_pelanggan' => 'required|string|max:20',
                     'tanggal_reservasi' => 'required|date',
-                    'jam_reservasi' => 'required|date_format:H:i:s',
+                    'jam_reservasi' => 'required|date_format:H:i',
                     'status_reservasi' => 'required|in:Diproses,Selesai',
                     'nama_layanan' => 'required|string',
                     'capster' => 'required|string',

@@ -23,9 +23,19 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
     const [date, setDate] = React.useState<Date | null>(value ?? null);
 
     const handleSelect = (selectedDate: Date | undefined) => {
-        setDate(selectedDate ?? null);
-        if (onChange) onChange(selectedDate ?? null);
+        if (selectedDate) {
+            const local = new Date(selectedDate);
+            local.setHours(12, 0, 0, 0);
+            setDate(local);
+            onChange?.(local);
+            return;
+        }
+
+        setDate(null);
+        onChange?.(null);
     };
+    console.log("value DatePicker", value);
+
 
     return (
         <Popover>

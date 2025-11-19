@@ -58,7 +58,7 @@ class PresensiController extends Controller
                     $endEdit = null;
                 }
 
-                if ($startEdit && $endEdit && $now->between($startEdit, $endEdit)) {
+                if (($startEdit && $endEdit && $now->between($startEdit, $endEdit)) || Auth::user()->role->role_name === 'Owner') {
                     $canEdit = true;
                 }
             }
