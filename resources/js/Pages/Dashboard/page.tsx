@@ -10,9 +10,9 @@ export default function Dashboard({
     totalReservasiToday,
     totalReservasiMonth,
     capsterChart,
-    layananTop
+    layananTop,
+    presensiTodayChart
 }) {
-    // console.log("layananTop", layananTop);
     return (
         <Layout
         >
@@ -60,9 +60,8 @@ export default function Dashboard({
                             </p>
                         </CardContent>
                     </Card>
-
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-5">
                     <CapsterBarChart
                         data={capsterChart}
                         monthLabel="Reservasi Bulan Ini"
@@ -70,6 +69,10 @@ export default function Dashboard({
                     <CapsterBarChart
                         data={layananTop}
                         monthLabel="Layanan Bulan Ini"
+                    />
+                    <CapsterBarChart
+                        data={presensiTodayChart}
+                        monthLabel="Kehadiran Karyawan Hari Ini"
                     />
                 </div>
             </div>

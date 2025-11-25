@@ -84,13 +84,27 @@ class DashboardController extends Controller
                 ];
             });
 
+        $hadirToday = DetailPresensi::whereDate('created_at', $today)
+            ->where('status_presensi', 'Hadir')
+            ->count();
+
+        $absenToday = DetailPresensi::whereDate('created_at', $today)
+            ->where('status_presensi', 'Absen')
+            ->count();
+
+        $presensiTodayChart = [
+            ['name' => 'Hadir', 'total' => $hadirToday],
+            ['name' => 'Absen', 'total' => $absenToday],
+        ];
+
         return Inertia::render('Dashboard/page', [
             'topEmployee' => $topEmployeeData,
             'topKapter' => $topKapterData,
             'totalReservasiToday' => Reservasi::whereDate('created_at', $today)->count(),
             'totalReservasiMonth' => Reservasi::whereMonth('created_at', $month)->count(),
             'capsterChart' => $capsterChart,
-            'layananTop' => $layananTop
+            'layananTop' => $layananTop,
+            'presensiTodayChart' => $presensiTodayChart
         ]);
     }
 }
