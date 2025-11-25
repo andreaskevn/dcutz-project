@@ -31,7 +31,7 @@ export type Reservasi = {
   status_reservasi: string;
   layanans: string[];
   tanggal_reservasi: string;
-  jam_reservasi: string;
+  jam_reservasi: any;
   id_user: string;
   created_at: string;
   id_pelanggan: string;
@@ -59,7 +59,6 @@ interface Pelanggan {
 export default function IndexPage({ reservasis, layanans, pelanggans }: Props) {
   const [alertMessage, setAlertMessage] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  // console.log("reservasis", reservasis);
   const { props } = usePage();
   const flash = props.flash as { success?: string; error?: string };
 

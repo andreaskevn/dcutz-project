@@ -1,5 +1,5 @@
 nama_pelanggan;nomor_telepon_pelanggan;tanggal_reservasi;jam_reservasi;status_reservasi;nama_layanan;capster
-Budi;9123123132;04/11/2025;10:30;Diproses;Design Perm, Hair Colour - Basic Colour;Agis
-Joko;5651665151;05/11/2025;11:30;Selesai;Design Cornrow, Hairmask + haircut;Jack
-Gatau;54564516;06/11/2025;12:30;Diproses;Smoothing;Rohman
-Tester;5648498486;07/11/2025;13:30;Selesai;Dreadlocks Extensions;Jack
+Budi;9123123132;2025-11-04;10:30;Diproses;Design Perm, Hair Colour - Basic Colour;Agis
+Joko;5651665151;2025-11-05;11:30;Selesai;Design Cornrow, Hairmask + haircut;Jack
+Gatau;54564516;2025-11-06;12:30;Diproses;Smoothing;Rohman
+Tester;5648498486;2025-11-07;13:30;Selesai;Dreadlocks Extensions;Jack

@@ -29,7 +29,7 @@ class ReservasiController extends Controller
                 'id_pelanggan' => $reservasi->pelanggan->nama_pelanggan,
                 'status_reservasi' => $reservasi->status_reservasi,
                 'tanggal_reservasi' => $reservasi->tanggal_reservasi,
-                'jam_reservasi' => $reservasi->jam_reservasi,
+                'jam_reservasi' => \Carbon\Carbon::parse($reservasi->jam_reservasi)->format('H:i'),
                 'created_at' => $reservasi->created_at->format('Y-m-d H:i:s'),
                 'id_user' => $reservasi->user->name,
                 'layanans' => $reservasi->detail_reservasis->map(function ($detail) {
@@ -215,7 +215,7 @@ class ReservasiController extends Controller
             'reservasi' => [
                 'id' => $reservasi->id,
                 'tanggal_reservasi' => $reservasi->tanggal_reservasi,
-                'jam_reservasi' => $reservasi->jam_reservasi,
+                'jam_reservasi' => \Carbon\Carbon::parse($reservasi->jam_reservasi)->format('H:i'),
                 'status_reservasi' => $reservasi->status_reservasi,
                 'total_harga' => $reservasi->total_harga,
             ],
@@ -267,7 +267,7 @@ class ReservasiController extends Controller
             'nama_pelanggan'          => 'required_without:id_pelanggan|string|max:255',
             'nomor_telepon_pelanggan' => 'required_without:id_pelanggan|string|max:20',
             'tanggal_reservasi'       => 'required|date',
-            'jam_reservasi'           => 'required|date_format:H:i',
+            'jam_reservasi'           => 'required|date_format:H:i:s',
             'id_layanan'              => 'required|array|min:1',
             'id_layanan.*'            => 'required|string|exists:layanans,id',
             'status_reservasi'        => 'required|in:Diproses,Selesai',
@@ -308,6 +308,7 @@ class ReservasiController extends Controller
         $jamBaru = Carbon::parse($validated['jam_reservasi']);
         $todayReservation = Reservasi::where('id_user', $validated['id_user'])
             ->where('tanggal_reservasi', $validated['tanggal_reservasi'])
+            ->where('id', '!=', $id)
             ->get();
 
         foreach ($todayReservation as $r) {

@@ -39,6 +39,6 @@ class Reservasi extends Model
     public $incrementing = false;
     protected $casts = [
         'tanggal_reservasi' => 'string',
-        'jam_reservasi' => 'string',
+        // 'jam_reservasi' => 'string',
     ];
 }

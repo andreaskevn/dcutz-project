@@ -250,7 +250,9 @@ export default function EditReservasi({
                                         id="jam_reservasi"
                                         step="60"
                                         value={data.jam_reservasi}
-                                        onChange={(e) => setData("jam_reservasi", e.target.value)}
+                                        onChange={(e) => setData("jam_reservasi", (e.target.value))}
+                                        className="w-full bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                                        icon={<ClockCheck className="mr-2 h-4 w-4 text-muted-foreground" />}
                                     />
                                 </div>
                                 {errors.jam_reservasi && <p className="text-sm text-red-500">{errors.jam_reservasi}</p>}

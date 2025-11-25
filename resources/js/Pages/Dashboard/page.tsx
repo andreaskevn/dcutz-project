@@ -12,7 +12,7 @@ export default function Dashboard({
     capsterChart,
     layananTop
 }) {
-    console.log("layananTop", layananTop);
+    // console.log("layananTop", layananTop);
     return (
         <Layout
         >
