@@ -1,4 +1,4 @@
-import { Head, useForm } from "@inertiajs/react";
+                import { Head, useForm } from "@inertiajs/react";
 import Layout from "@/Layouts/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Label } from "@/Components/ui/label";

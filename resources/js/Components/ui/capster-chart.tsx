@@ -16,11 +16,15 @@ import {
     ChartTooltipContent,
 } from "@/Components/ui/chart";
 
-export default function CapsterBarChart({ data = [], monthLabel = "This Month" }) {
+export default function CapsterBarChart({
+    data = [],
+    monthLabel = "This Month",
+    title = "Total Reservasi"
+}) {
 
     const chartConfig = {
         total: {
-            label: "Total Reservasi",
+            label: <span>{title}</span>,
             color: "bg-gradient-to-r from-[#00D79E] to-[#0BD0D4]",
         },
         label: {
@@ -31,8 +35,7 @@ export default function CapsterBarChart({ data = [], monthLabel = "This Month" }
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Reservasi Capster</CardTitle>
-                <CardDescription>{monthLabel}</CardDescription>
+                <CardTitle>{monthLabel}</CardTitle>
             </CardHeader>
 
             <CardContent>
@@ -73,14 +76,6 @@ export default function CapsterBarChart({ data = [], monthLabel = "This Month" }
                             fill="url(#capsterGradient)"
                             radius={6}
                         >
-                            {/* <LabelList
-                                dataKey="name"
-                                position="insideLeft"
-                                offset={8}
-                                className="fill-white"
-                                fontSize={12}
-                            /> */}
-
                             <LabelList
                                 dataKey="total"
                                 position="right"

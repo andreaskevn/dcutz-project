@@ -32,6 +32,7 @@ class ReservasiController extends Controller
                 'jam_reservasi' => \Carbon\Carbon::parse($reservasi->jam_reservasi)->format('H:i'),
                 'created_at' => $reservasi->created_at->format('Y-m-d H:i:s'),
                 'id_user' => $reservasi->user->name,
+                'flag' => $reservasi->flag,
                 'layanans' => $reservasi->detail_reservasis->map(function ($detail) {
                     return $detail->layanans ? $detail->layanans->nama_layanan : null;
                 })->filter()->values()->all(),
@@ -158,6 +159,7 @@ class ReservasiController extends Controller
                 'jam_reservasi' => $validated['jam_reservasi'],
                 'status_reservasi' => $validated['status_reservasi'],
                 'total_harga' => $totalHarga,
+                'flag' => 'Manual',
             ];
 
             $reservasi = Reservasi::create($reservasiData);
@@ -543,6 +545,7 @@ class ReservasiController extends Controller
                     'status_reservasi' => $rowData['status_reservasi'],
                     'total_harga' => $totalHarga,
                     'created_at' => now(),
+                    'flag' => 'CSV',
                 ]);
 
                 Log::info('✅ Reservasi dibuat:', $reservasi->toArray());

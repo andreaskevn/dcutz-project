@@ -12,6 +12,7 @@ class Pelanggan extends Model
         'id',
         'nama_pelanggan',
         'nomor_telepon_pelanggan',
+        'flag',
     ];
 
     protected $keyType = 'string';

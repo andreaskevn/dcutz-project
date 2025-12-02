@@ -28,6 +28,7 @@ export type Pelanggan = {
   id: string;
   nama_pelanggan: string;
   nomor_telepon_pelanggan: string;
+  flag?: string;
 }
 
 interface Props {
@@ -73,6 +74,7 @@ export default function IndexPage({ pelanggans }: Props) {
     // { accessorKey: "id", header: "ID" },
     { accessorKey: "nama_pelanggan", header: "Nama Pelanggan" },
     { accessorKey: "nomor_telepon_pelanggan", header: "Nomor Telepon" },
+    { accessorKey: "flag", header: "Source" },
     {
       header: "Action",
       cell: ({ row }) => {

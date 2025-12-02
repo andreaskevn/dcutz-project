@@ -19,6 +19,7 @@ return new class extends Migration
             $table->date('tanggal_reservasi')->required();
             $table->integer('total_harga')->default(0);
             $table->uuid('id_user')->required();
+            $table->string('flag')->nullable();
             
             $table->foreign('id_user')->references('id')->on('users');
             $table->foreign('id_pelanggan')->references('id')->on('pelanggans');

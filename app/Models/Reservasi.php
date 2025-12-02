@@ -18,6 +18,7 @@ class Reservasi extends Model
         'updated_at',
         'total_harga',
         'id_user',
+        'flag'
     ];
 
     public function detail_reservasis()

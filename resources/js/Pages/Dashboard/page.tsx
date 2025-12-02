@@ -65,14 +65,17 @@ export default function Dashboard({
                     <CapsterBarChart
                         data={capsterChart}
                         monthLabel="Reservasi Bulan Ini"
+                        title="Total Reservasi"
                     />
                     <CapsterBarChart
                         data={layananTop}
                         monthLabel="Layanan Bulan Ini"
+                        title="Total Reservasi"
                     />
                     <CapsterBarChart
                         data={presensiTodayChart}
                         monthLabel="Kehadiran Karyawan Hari Ini"
+                        title="Total Kehadiran"
                     />
                 </div>
             </div>

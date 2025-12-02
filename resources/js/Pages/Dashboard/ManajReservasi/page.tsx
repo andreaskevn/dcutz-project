@@ -35,6 +35,7 @@ export type Reservasi = {
   id_user: string;
   created_at: string;
   id_pelanggan: string;
+  flag?: string;
 };
 
 interface Layanan {
@@ -122,6 +123,7 @@ export default function IndexPage({ reservasis, layanans, pelanggans }: Props) {
     },
     { accessorKey: "tanggal_reservasi", header: "Tanggal Reservasi" },
     { accessorKey: "jam_reservasi", header: "Jam Reservasi" },
+    { accessorKey: "flag", header: "Source" },
     { accessorKey: "id_user", header: "Capster" },
     {
       accessorKey: "created_at", header: "Created At",

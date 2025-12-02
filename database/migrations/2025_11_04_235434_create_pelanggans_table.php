@@ -15,6 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('nama_pelanggan')->required();
             $table->string('nomor_telepon_pelanggan')->required();
+            $table->string('flag')->nullable();
             $table->timestamps();
         });
     }

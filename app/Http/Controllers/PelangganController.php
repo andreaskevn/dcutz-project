@@ -40,6 +40,8 @@ class PelangganController extends Controller
             'nomor_telepon_pelanggan' => 'required|string|max:20',
         ]);
 
+        $validated['flag'] = 'Manual';
+
         $validated['id'] = Str::uuid();
         Pelanggan::create($validated);
 
@@ -148,6 +150,7 @@ class PelangganController extends Controller
                 'id'                        => Str::uuid(),
                 'nama_pelanggan'            => $nama,
                 'nomor_telepon_pelanggan'   => $telp,
+                'flag'                      => 'CSV',
             ]);
 
             $created++;
