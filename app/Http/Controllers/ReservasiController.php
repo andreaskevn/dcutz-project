@@ -224,7 +224,7 @@ class ReservasiController extends Controller
             'pelanggan' => $reservasi->pelanggan,
             'capster' => $reservasi->user,
             'layanans' => $layanans,
-        ]);
+        ])->with(['success' => null, 'error' => null]);
     }
 
 
@@ -234,6 +234,9 @@ class ReservasiController extends Controller
     public function edit($id)
     {
         $reservasi = Reservasi::with('detail_reservasis.layanans', 'pelanggan')->findOrFail($id);
+        if ($reservasi->jam_reservasi) {
+            $reservasi->jam_reservasi = \Carbon\Carbon::parse($reservasi->jam_reservasi)->format('H:i');
+        }
         $layanans = Layanan::all();
         $pelanggans = Pelanggan::all();
         $capster = User::join('roles', 'users.id_role', '=', 'roles.id')
@@ -269,7 +272,7 @@ class ReservasiController extends Controller
             'nama_pelanggan'          => 'required_without:id_pelanggan|string|max:255',
             'nomor_telepon_pelanggan' => 'required_without:id_pelanggan|string|max:20',
             'tanggal_reservasi'       => 'required|date',
-            'jam_reservasi'           => 'required|date_format:H:i:s',
+            'jam_reservasi'           => 'required|date_format:H:i',
             'id_layanan'              => 'required|array|min:1',
             'id_layanan.*'            => 'required|string|exists:layanans,id',
             'status_reservasi'        => 'required|in:Diproses,Selesai',

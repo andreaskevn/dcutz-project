@@ -3,6 +3,8 @@ import { Head } from "@inertiajs/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Label } from "@/Components/ui/label";
 import { Button } from "@/Components/ui/button";
+import { router } from '@inertiajs/core'
+
 
 interface Props {
     reservasi: {
@@ -118,10 +120,11 @@ export default function ShowReservasi({ reservasi, pelanggan, capster, layanans 
                         </div>
 
                         <div className="flex justify-end mt-6">
-                            <Button variant="outline" onClick={() => history.back()}>
+                            <Button variant="outline" onClick={() => router.visit(route('reservasi.index'))}>
                                 Kembali
                             </Button>
                         </div>
+
                     </CardContent>
                 </Card>
             </div>
